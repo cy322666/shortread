@@ -12,7 +12,11 @@ class WebhookTask extends Model
     protected $fillable = [
         'task_content',
         'task_complete',
-        'processed_at',
+        'lead_id',
+        'contact_id',
+        'company_id',
+        'scenario',
+        'products',
     ];
 
     protected $casts = [

@@ -2,15 +2,33 @@
 
 namespace App\Jobs;
 
+use AmoCRM\Collections\CustomFieldsValuesCollection;
+use AmoCRM\Exceptions\AmoCRMApiException;
+use AmoCRM\Exceptions\AmoCRMMissedTokenException;
+use AmoCRM\Exceptions\AmoCRMoAuthApiException;
+use AmoCRM\Exceptions\InvalidArgumentException;
+use AmoCRM\Models\CompanyModel;
+use AmoCRM\Models\ContactModel;
+use AmoCRM\Models\CustomFieldsValues\MultitextCustomFieldValuesModel;
+use AmoCRM\Models\CustomFieldsValues\TextCustomFieldValuesModel;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\MultitextCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\TextCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\MultitextCustomFieldValueModel;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\TextCustomFieldValueModel;
+use AmoCRM\Models\LeadModel;
 use App\Models\WebhookTask;
 use App\Models\WebhookTaskLog;
 use App\Services\AmoService;
 use App\Services\ProductService;
+use App\Support\CrmSchema;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class ProcessWebhookTask implements ShouldQueue
 {
@@ -25,103 +43,530 @@ class ProcessWebhookTask implements ShouldQueue
 
     public function handle(AmoService $amoService)
     {
-        $content = $this->task->task_content;
+        try {
+            $content = $this->task->task_content;
+            $payload = $this->extractPayload($content);
+            $scenario = $this->detectScenario($content, $payload);
 
-        if (($content['event'] ?? '') !== 'thankyou') {
+            if ($scenario === 'user_registered') {
+                $contact = $this->resolveRegisteredUserContact($payload, $amoService);
 
-            $this->log("Пропускаем задачу, ожидается событие thankyou");
-            $this->task->update(['task_complete' => true]);
+                $this->task->scenario = $scenario;
+                $this->task->contact_id = $contact?->getId();
+                $this->task->task_complete = true;
+                $this->task->save();
+
+                return;
+            }
+
+            if (!isset($payload['order']) || !is_array($payload['order'])) {
+
+                Log::debug(__METHOD__.' task : '.$this->task->id, ['Пропуск: нет блока order в payload']);
+
+                $this->task->task_complete = 1;
+                $this->task->save();
+
+                return;
+            }
+
+            $contact = $this->resolveContact($payload, $amoService);
+
+            $company = $this->resolveCompany($payload, $amoService);
+
+            $lead = $this->upsertLead($scenario, $payload, $contact, $company, $amoService);
+
+            if ($company?->getId()) {
+                $amoService->linkCompanyToLead($lead, (int)$company->getId());
+                $amoService->linkCompanyToContact($contact, (int)$company->getId());
+            }
+
+            if (!empty($payload['items']) && is_array($payload['items']))
+
+                $productIds = $this->syncProductsToLead($lead, $payload['items'], $amoService);
+
+            $this->task->scenario = $scenario;
+            $this->task->products = $productIds ?? [];
+            $this->task->contact_id = $contact->getId();
+            $this->task->company_id = $company?->getId();
+            $this->task->lead_id = $lead?->getId();
+            $this->task->task_complete = true;
+            $this->task->save();
+
+        } catch (Throwable $e) {
+
+            Log::error('Ошибка обработки: ' . $e->getFile().' '.$e->getLine().' '.$e->getMessage(), [
+                'stack' => $e->getTrace()
+            ]);
+        }
+    }
+
+    /**
+     * @throws AmoCRMoAuthApiException
+     * @throws AmoCRMApiException
+     * @throws AmoCRMMissedTokenException
+     */
+    protected function resolveRegisteredUserContact(array $payload, AmoService $amoService): ?ContactModel
+    {
+        $user = $payload['user'] ?? [];
+        $email = trim((string)($user['email'] ?? ''));
+        $client = [
+            'pseudonym' => $user['display_name'] ?? ($user['username'] ?? 'Без имени'),
+            'username' => $user['username'] ?? null,
+            'user_id' => $user['user_id'] ?? null,
+        ];
+
+        $contact = $email !== '' ? $amoService->searchOrCreate($email) : $amoService->createContact();
+        if (!$contact || !$contact->getId()) {
+            return $contact;
+        }
+
+        $updatedContact = $this->buildContactModel($contact->getId(), $client, $email);
+        try {
+            return $amoService->updateContact($updatedContact);
+        } catch (AmoCRMApiException $e) {
+            Log::warning(__METHOD__ . ': updateContact skipped, fallback to existing contact. ' . $e->getMessage(), [
+                'code' => $e->getCode(),
+                'description' => $e->getDescription(),
+                'last_request' => $e->getLastRequestInfo(),
+            ]);
+            return $contact;
+        } catch (Throwable $e) {
+            Log::warning(__METHOD__ . ': updateContact skipped, fallback to existing contact. ' . $e->getMessage());
+            return $contact;
+        }
+    }
+
+    protected function extractPayload(array $content): array
+    {
+        if (isset($content['payload']) && is_array($content['payload']))
+
+            return $content['payload'];
+
+        return $content;
+    }
+
+    protected function detectScenario(array $content, array $payload): string
+    {
+        $event = (string) ($content['event'] ?? '');
+
+        if ($event === 'user_registered') {
+            return 'user_registered';
+        }
+
+        if (array_key_exists($event, CrmSchema::STATUSES))
+
+            return $event;
+
+        $order = $payload['order'] ?? [];
+        $status = mb_strtolower((string) ($order['status'] ?? ''));
+        $paidAt = trim((string) ($order['paid_at'] ?? ''));
+        $isRecurrent = !empty($order['is_recurrent']) && ($order['recurrent_type'] ?? '') === 'autopay';
+
+        if ($isRecurrent) {
+            return 'recurrent_payment';
+        }
+
+        if ($status === 'processing' && $paidAt !== '') {
+            return 'payment_complete';
+        }
+
+        if ($status === 'cancelled') {
+            return 'payment_failed';
+        }
+
+        if ($paidAt === '' && $status !== 'processing' && $this->isOlderThanMinutes($order['created_at'] ?? null, 30)) {
+            return 'order_abandoned';
+        }
+
+        return 'checkout_started';
+    }
+
+    protected function isOlderThanMinutes(mixed $value, int $minutes): bool
+    {
+        if (!$value) {
+            return false;
+        }
+
+        try {
+            return Carbon::parse((string) $value)->lt(now()->subMinutes($minutes));
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * @throws AmoCRMoAuthApiException
+     * @throws AmoCRMApiException
+     * @throws AmoCRMMissedTokenException
+     */
+    protected function resolveContact(array $payload, AmoService $amoService): ?\AmoCRM\Models\ContactModel
+    {
+        $client = $payload['client'] ?? [];
+        $email = trim((string) ($client['email'] ?? ''));
+
+        $contact = $email !== '' ? $amoService->searchOrCreate($email) : $amoService->createContact();
+        if (!$contact || !$contact->getId()) {
+            return $contact;
+        }
+
+        $updatedContact = $this->buildContactModel($contact->getId(), $client, $email);
+        try {
+            return $amoService->updateContact($updatedContact);
+        } catch (AmoCRMApiException $e) {
+            Log::warning(__METHOD__ . ': updateContact skipped, fallback to existing contact. ' . $e->getMessage(), [
+                'code' => $e->getCode(),
+                'description' => $e->getDescription(),
+                'last_request' => $e->getLastRequestInfo(),
+            ]);
+            return $contact;
+        } catch (Throwable $e) {
+            Log::warning(__METHOD__ . ': updateContact skipped, fallback to existing contact. ' . $e->getMessage());
+            return $contact;
+        }
+    }
+
+    protected function buildContactModel(?int $contactId, array $client, string $email): ContactModel
+    {
+        $contact = new ContactModel();
+        $contact->setId((int) $contactId);
+        $contact->setName($client['pseudonym'] ?? ($client['username'] ?? 'Без имени'));
+
+        $fields = new CustomFieldsValuesCollection();
+
+        if ($email !== '') {
+
+            $fields->add(
+                (new MultitextCustomFieldValuesModel())
+                    ->setFieldCode('EMAIL')
+                    ->setValues(
+                        (new MultitextCustomFieldValueCollection())
+                            ->add(
+                                (new MultitextCustomFieldValueModel())
+                                    ->setValue($email)
+                                    ->setEnum('WORK')
+                            )
+                    )
+            );
+        }
+
+        $usernameFieldId = CrmSchema::FIELDS['contact']['username']['id'];
+
+        if ($usernameFieldId > 0 && !empty($client['username'])) {
+
+            $fields->add(
+                (new TextCustomFieldValuesModel())
+                    ->setFieldId($usernameFieldId)
+                    ->setValues(
+                        (new TextCustomFieldValueCollection())
+                            ->add((new TextCustomFieldValueModel())->setValue((string) $client['username']))
+                    )
+            );
+        }
+
+        $userIdFieldId = CrmSchema::FIELDS['contact']['user_id']['id'];
+
+        if ($userIdFieldId > 0 && isset($client['user_id'])) {
+
+            $fields->add(
+                (new TextCustomFieldValuesModel())
+                    ->setFieldId($userIdFieldId)
+                    ->setValues(
+                        (new TextCustomFieldValueCollection())
+                            ->add((new TextCustomFieldValueModel())->setValue((string) $client['user_id']))
+                    )
+            );
+        }
+
+        if ($fields->count() > 0)
+            $contact->setCustomFieldsValues($fields);
+
+        return $contact;
+    }
+
+    protected function resolveCompany(array $payload, AmoService $amoService): ?\AmoCRM\Models\CompanyModel
+    {
+        try {
+            if ($payload['order']['is_company'] === false)
+                return null;
+
+            $companyInfo = $payload['client']['company_info'] ?? [];
+            $inn = (string)($companyInfo['inn'] ?? '');
+            $companyName = $companyInfo['organisation_name'] ?? 'Без названия';
+
+            $company = $inn !== '' ? $amoService->getCompanyByINN($inn) : null;
+
+            if ($company && $company->getId()) {
+
+                $companyToUpdate = $this->buildCompanyModel($company->getId(), $companyName, $inn);
+
+                return $amoService->updateCompany($companyToUpdate);
+            }
+
+            $companyFields = [];
+
+            $this->appendCustomField($companyFields, CrmSchema::FIELDS['company']['inn']['id'], $inn);
+
+            return $amoService->createCompany([
+                'name' => $companyName,
+                'custom_fields_values' => $companyFields,
+            ]);
+
+        } catch (Throwable $e) {
+            Log::error(__METHOD__ . ': ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    protected function buildCompanyModel(int $companyId, string $companyName, string $inn): CompanyModel
+    {
+        $company = new CompanyModel();
+        $company->setId($companyId);
+        $company->setName($companyName);
+
+        $innFieldId = (int)(CrmSchema::FIELDS['company']['inn']['id'] ?? 0);
+
+        if ($innFieldId > 0 && $inn !== '') {
+            $fields = new CustomFieldsValuesCollection();
+            $fields->add(
+                (new TextCustomFieldValuesModel())
+                    ->setFieldId($innFieldId)
+                    ->setValues(
+                        (new TextCustomFieldValueCollection())
+                            ->add((new TextCustomFieldValueModel())->setValue($inn))
+                    )
+            );
+            $company->setCustomFieldsValues($fields);
+        }
+
+        return $company;
+    }
+
+    protected function upsertLead(string $scenario, array $payload, ContactModel $contact, ?CompanyModel $company, AmoService $amoService): LeadModel
+    {
+        $orderId = $payload['order']['order_id'] ?? null;
+
+        $leadData = $this->buildLeadData($scenario, $payload, $contact->getId(), $company?->getId());
+
+        if ($orderId) {
+
+            $lead = $amoService->findLeadByOrder((string)$orderId);
+
+            if ($lead) {
+                if ($scenario === 'order_abandoned' && $this->isLeadAlreadyPaid($lead)) {
+                    Log::info(__METHOD__ . ': skip abandoned update for paid lead', [
+                        'lead_id' => $lead->getId(),
+                        'order_id' => $orderId,
+                    ]);
+                    return $lead;
+                }
+
+                $amoService->updateLead($lead->getId(), $leadData);
+
+                return $lead;
+            }
+        }
+
+        return $amoService->createLead($leadData);
+    }
+
+    protected function isLeadAlreadyPaid(LeadModel $lead): bool
+    {
+        $paidStatusIds = [
+            (int)(CrmSchema::STATUSES['payment_complete']['id'] ?? 0),
+            (int)(CrmSchema::STATUSES['recurrent_payment']['id'] ?? 0),
+        ];
+
+        if (in_array((int)$lead->getStatusId(), $paidStatusIds, true)) {
+            return true;
+        }
+
+        $paidAtFieldId = (int)(CrmSchema::FIELDS['lead']['paid_at']['id'] ?? 0);
+        if ($paidAtFieldId <= 0) {
+            return false;
+        }
+
+        foreach ($lead->getCustomFieldsValues() ?? [] as $customField) {
+            if ((int)$customField->getFieldId() !== $paidAtFieldId) {
+                continue;
+            }
+
+            foreach ($customField->getValues() ?? [] as $valueModel) {
+                $value = $valueModel->getValue();
+                if ($value !== null && (string)$value !== '') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    protected function buildLeadData(string $scenario, array $payload, int $contactId, ?int $companyId): array
+    {
+        $order = $payload['order'] ?? [];
+        $firstItem = $payload['items'][0] ?? [];
+
+        $leadData = [
+            'name' => ($firstItem['product_name'] ?? '') . '/' . ($order['order_id'] ?? ''),
+            'price' => $order['total'] ?? 0,
+            'custom_fields_values' => [],
+            'contacts' => $contactId ? [['id' => $contactId]] : [],
+            'company' => $companyId ? ['id' => $companyId] : null,
+        ];
+
+        $statusId = (int) (CrmSchema::STATUSES[$scenario]['id'] ?? 0);
+
+        if ($statusId > 0)
+            $leadData['status_id'] = $statusId;
+
+        $errorReason = $order['error_reason'] ?? ($order['fail_reason'] ?? ($order['error'] ?? null));
+
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['order_id']['id'], $order['order_id'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['parent_order_id']['id'], $order['parent_order_id'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['product']['id'], $order['product'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['created_at']['id'], $this->timestampValue($order['created_at'] ?? null));
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['paid_at']['id'], $this->timestampValue($order['paid_at'] ?? null));
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['status']['id'], $order['status'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['period_subscribe']['id'], $order['period_subscribe'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['payment_method']['id'], $order['payment_method'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['subtotal']['id'], $order['subtotal'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['quantity']['id'], $order['quantity'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['total']['id'], $order['total'] ?? null);
+        // NOTE: origin is a select field in amoCRM and may reject unknown values.
+        // We skip it for now to avoid blocking lead creation until enum sync is implemented.
+        // $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['origin']['id'], $order['origin'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['product_name']['id'], $firstItem['product_name'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('access_count'), $order['access_count'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('error_reason'), $errorReason);
+        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('subscription_start_at'), $this->timestampValue($order['subscription_start_at'] ?? null));
+        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('subscription_end_at'), $this->timestampValue($order['subscription_end_at'] ?? null));
+        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('recurrent_type'), $order['recurrent_type'] ?? null);
+
+        if (array_key_exists('is_company', $order)) {
+
+            $this->appendCustomField(
+                $leadData['custom_fields_values'],
+                CrmSchema::FIELDS['lead']['customer_type']['id'],
+                $order['is_company'] ? 'Юр.лицо' : 'Физ.лицо'
+            );
+        }
+
+        return $leadData;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws AmoCRMApiException
+     * @throws AmoCRMMissedTokenException
+     * @throws AmoCRMoAuthApiException
+     */
+    protected function syncProductsToLead(LeadModel $lead, array $items, AmoService $amoService): array
+    {
+        $productService = new ProductService($amoService);
+        $productIds = [];
+
+        foreach ($items as $item) {
+
+            if (!is_array($item))
+
+                continue;
+
+            $product = $productService->findOrCreate($item['product_name'], [
+                'price' => $item['price']
+            ]);
+
+            $productIds[] = $product->getId();
+        }
+
+        $productIds = array_values(array_unique(array_filter($productIds)));
+
+        $amoService->linkProductsToLead($lead, $productIds);
+
+        return $productIds;
+    }
+
+    protected function appendCustomField(array &$customFields, int $fieldId, mixed $value): void
+    {
+        if ($fieldId <= 0 || $value === null || $value === '') {
             return;
         }
 
-        $payload = $content['payload'];
+        $value = $this->normalizeCustomFieldValue($fieldId, $value);
 
-        // Контакт
-        $contactId = null;
-        $email = $payload['client']['email'] ?? null;
+        $customFields[] = [
+            'field_id' => $fieldId,
+            'values' => [
+                ['value' => $value],
+            ],
+        ];
+    }
 
-        if ($email) {
-            $contactId = $amoService->getContactByEmail($email);
-        }
-        if (!$contactId) {
+    protected function normalizeCustomFieldValue(int $fieldId, mixed $value): mixed
+    {
+        $dateFields = [
+            $this->leadFieldId('created_at'),
+            $this->leadFieldId('paid_at'),
+            $this->leadFieldId('subscription_start_at'),
+            $this->leadFieldId('subscription_end_at'),
+        ];
 
-            $contactId = $amoService->createContact([
-                'name' => $payload['client']['pseudonym'] ?? 'Без имени',
-                'custom_fields_values' => [
-                    [
-                        'field_id' => 348289,
-                        'values' => [['value' => $email ?? '']]
-                    ],
-                    [
-                        'field_id' => 348287,
-                        'values' => [['value' => $payload['client']['username'] ?? '']]
-                    ]
-                ]
-            ]);
+        if (in_array($fieldId, $dateFields, true)) {
+            return is_numeric($value) ? (int) $value : $this->timestampValue($value);
         }
 
-        // Компания
-        $companyId = null;
-        if (!empty($payload['order']['is_company'])) {
-            $inn = $payload['client']['company_info']['inn'] ?? '';
-            if ($inn) {
-                $companyId = $amoService->getCompanyByINN($inn);
-            }
-            if (!$companyId) {
-                $companyId = $amoService->createCompany([
-                    'name' => $payload['client']['company_info']['organisation_name'] ?? 'Без названия',
-                    'custom_fields_values' => [
-                        [
-                            'field_id' => 348495,
-                            'values' => [['value' => $inn]]
-                        ]
-                    ]
-                ]);
-            }
-        }
+        $numericFields = [
+            $this->leadFieldId('subtotal'),
+            $this->leadFieldId('quantity'),
+            $this->leadFieldId('total'),
+            $this->leadFieldId('access_count'),
+        ];
 
-        // Сделка
-        $leadId = $amoService->createLead([
-            'name' => $payload['items'][0]['product_name'] . '/' . ($payload['order']['order_id'] ?? ''),
-            'price' => $payload['order']['total'] ?? 0,
-            '_embedded' => [
-                'contacts' => $contactId ? [['id' => $contactId]] : [],
-                'companies' => $companyId ? [['id' => $companyId]] : [],
-            ]
-        ]);
-
-        if ($leadId && !empty($payload['items'])) {
-
-            $productIds = [];
-
-            $productService = new ProductService($amoService);
-
-            foreach ($payload['items'] as $item) {
-
-                $product = $productService->findProduct(name, article);
-
-                if (!$product) {
-
-                    $product = $productService->createProduct();
-                }
-
-                $productIds[] = $product->getId();
+        if (in_array($fieldId, $numericFields, true)) {
+            if (is_int($value)) {
+                return $value;
             }
 
-            $amoService->linkProductsToLead($leadId, $productIds, $amoService);
+            if (is_float($value)) {
+                return $value;
+            }
+
+            if (is_numeric($value) && ctype_digit((string) $value)) {
+                return (int) $value;
+            }
+
+            return is_numeric($value) ? (float) $value : $value;
         }
 
+        return (string) $value;
+    }
+
+    protected function leadFieldId(string $key): int
+    {
+        return (int) (CrmSchema::FIELDS['lead'][$key]['id'] ?? 0);
+    }
+
+    protected function timestampValue(mixed $value): ?int
+    {
+        if (!$value) {
+            return null;
+        }
+
+        $timestamp = strtotime((string) $value);
+        return $timestamp === false ? null : $timestamp;
+    }
+
+    protected function markComplete(): void
+    {
         $this->task->update([
             'task_complete' => true,
-            'processed_at' => now()
         ]);
     }
 
-    protected function log(string $message)
+    protected function log(string $message): void
     {
         WebhookTaskLog::query()->create([
             'task_id' => $this->task->id,
-            'message' => $message
+            'message' => $message,
         ]);
     }
 }

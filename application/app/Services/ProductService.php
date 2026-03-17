@@ -3,34 +3,53 @@
 namespace App\Services;
 
 use AmoCRM\Client\AmoCRMApiClient;
+use AmoCRM\Collections\CustomFieldsValuesCollection;
 use AmoCRM\Exceptions\AmoCRMApiException;
+use AmoCRM\Exceptions\AmoCRMApiNoContentException;
 use AmoCRM\Exceptions\AmoCRMMissedTokenException;
 use AmoCRM\Exceptions\AmoCRMoAuthApiException;
 use AmoCRM\Exceptions\InvalidArgumentException;
 use AmoCRM\Filters\CatalogElementsFilter;
-use AmoCRM\Models\CatalogElements\CatalogElementModel;
+use AmoCRM\Models\CatalogElementModel;
+use AmoCRM\Models\CustomFieldsValues\PriceCustomFieldValuesModel;
+use AmoCRM\Models\CustomFieldsValues\TextCustomFieldValuesModel;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\PriceCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\TextCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\NumericCustomFieldValueModel;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\TextCustomFieldValueModel;
+use App\Support\CrmSchema;
 
 class ProductService
 {
     private AmoCRMApiClient $client;
-    private int $catalogId = 3059;
+    private int $catalogId = CrmSchema::FIELDS['catalog']['id'];
 
     public function __construct(AmoService $amoService)
     {
         $this->client = $amoService->client();
     }
 
-    public function findOrCreate(string $name, array $item)
+    /**
+     * @throws InvalidArgumentException
+     * @throws AmoCRMApiException
+     * @throws AmoCRMMissedTokenException
+     * @throws AmoCRMoAuthApiException
+     */
+    public function findOrCreate(string $name, array $item): CatalogElementModel
     {
-        $products = $this->client
-            ->catalogElements($this->catalogId)
-            ->get();
+        try {
+            $products = $this->client
+                ->catalogElements($this->catalogId)
+                ->get();
 
-        foreach ($products as $product) {
-            if ($product->getName() === $name) {
-                return $product->getId();
+            foreach ($products as $product) {
+
+                if ($product->getName() === $name)
+
+                    return $product;
             }
-        }
+
+        } catch (AmoCRMApiNoContentException) {}
 
         return $this->createProduct($name, $item);
     }
@@ -41,76 +60,67 @@ class ProductService
      * @throws AmoCRMMissedTokenException
      * @throws AmoCRMoAuthApiException
      */
-    public function findProduct(?string $name, ?string $article)
+    public function findProduct(string $name): ?CatalogElementModel
     {
-        if ($article) {
-
-            $filter = new CatalogElementsFilter();
-
-            $filter->setCustomFieldsValues([
-                [
-                    'field_id' => 348293,
-                    'values' => [
-                        ['value' => $article]
-                    ]
-                ]
-            ]);
-
-            $products = $this->client
-                ->catalogElements($this->catalogId)
-                ->get($filter);
-
-            if ($products->count()) {
-                return $products->first();
-            }
-        }
-
         if ($name) {
 
             $filter = new CatalogElementsFilter();
-            $filter->setNames([$name]);
+            $filter->setQuery($name);
 
-            $products = $this->client
-                ->catalogElements($this->catalogId)
-                ->get($filter);
+            try {
 
-            if ($products->count()) {
+                $products = $this->client
+                    ->catalogElements($this->catalogId)
+                    ->get($filter);
+
                 return $products->first();
+
+            } catch (AmoCRMApiNoContentException $e) {
+
+                return null;
             }
         }
-
-        return null;
     }
 
-    public function createProduct(string $name, array $item)
+    /**
+     * @throws InvalidArgumentException
+     * @throws AmoCRMApiException
+     * @throws AmoCRMMissedTokenException
+     * @throws AmoCRMoAuthApiException
+     */
+    public function createProduct(string $name, array $item): CatalogElementModel
     {
         $product = new CatalogElementModel();
 
         $product->setName($name);
+        $product->setCustomFieldsValues($this->buildProductCustomFields($item));
 
-        $product->setCustomFieldsValues([
-            [
-                'field_id' => 348293, // article
-                'values' => [
-                    [
-                        'value' => $item['article_title'] ?? ''
-                    ]
-                ]
-            ],
-            [
-                'field_id' => 348297, // price
-                'values' => [
-                    [
-                        'value' => $item['price'] ?? 0
-                    ]
-                ]
-            ]
-        ]);
-
-        $result = $this->client
+        return $this->client
             ->catalogElements($this->catalogId)
             ->addOne($product);
+    }
 
-        return $result->getId();
+    protected function buildProductCustomFields(array $item): CustomFieldsValuesCollection
+    {
+        $collection = new CustomFieldsValuesCollection();
+
+//        $articleField = (new TextCustomFieldValuesModel())
+//            ->setFieldId(CrmSchema::FIELDS['catalog']['fields']['article']['id'])
+//            ->setValues(
+//                (new TextCustomFieldValueCollection())
+//                    ->add((new TextCustomFieldValueModel())->setValue((string) ($item['article_title'] ?? '')))
+//            );
+
+        $priceField = (new PriceCustomFieldValuesModel())
+            ->setFieldId(CrmSchema::FIELDS['catalog']['fields']['price']['id'])
+            ->setValues(
+                (new PriceCustomFieldValueCollection())
+                    ->add((new NumericCustomFieldValueModel())->setValue((float) ($item['price'] ?? 0)))
+            );
+
+//        $collection->add($articleField);
+        $collection->add($priceField);
+
+        return $collection;
     }
 }
