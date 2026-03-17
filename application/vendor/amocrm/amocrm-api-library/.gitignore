@@ -1,0 +1,9 @@
+vendor/
+composer.phar
+composer.lock
+.idea
+examples/.env
+.phpunit.result.cache
+/.DS_Store
+.vscode
+index.php
