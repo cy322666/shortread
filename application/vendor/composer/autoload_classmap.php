@@ -4764,6 +4764,7 @@ return array(
     'Symfony\\Component\\Translation\\StaticMessage' => $vendorDir . '/symfony/translation/StaticMessage.php',
     'Symfony\\Component\\Translation\\Test\\AbstractProviderFactoryTestCase' => $vendorDir . '/symfony/translation/Test/AbstractProviderFactoryTestCase.php',
     'Symfony\\Component\\Translation\\Test\\IncompleteDsnTestTrait' => $vendorDir . '/symfony/translation/Test/IncompleteDsnTestTrait.php',
+    'Symfony\\Component\\Translation\\Test\\ProviderFactoryTestCase' => $vendorDir . '/symfony/translation/Test/ProviderFactoryTestCase.php',
     'Symfony\\Component\\Translation\\Test\\ProviderTestCase' => $vendorDir . '/symfony/translation/Test/ProviderTestCase.php',
     'Symfony\\Component\\Translation\\TranslatableMessage' => $vendorDir . '/symfony/translation/TranslatableMessage.php',
     'Symfony\\Component\\Translation\\Translator' => $vendorDir . '/symfony/translation/Translator.php',

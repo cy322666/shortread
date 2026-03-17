@@ -5,7 +5,6 @@ namespace Illuminate\Foundation\Support\Providers;
 use Closure;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Traits\ForwardsCalls;
 
@@ -74,12 +73,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->routes(function () {
-            // Подключение стандартного API
-            Route::middleware('api')
-                ->prefix('api')
-                ->group(base_path('routes/api.php'));
-        });
+        //
     }
 
     /**
