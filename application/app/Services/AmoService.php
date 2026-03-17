@@ -14,15 +14,12 @@ use AmoCRM\Collections\CustomFieldsValuesCollection;
 use AmoCRM\Models\CustomFieldsValues\BaseCustomFieldValuesModel;
 use AmoCRM\Models\CustomFieldsValues\DateCustomFieldValuesModel;
 use AmoCRM\Models\CustomFieldsValues\NumericCustomFieldValuesModel;
-use AmoCRM\Models\CustomFieldsValues\SelectCustomFieldValuesModel;
 use AmoCRM\Models\CustomFieldsValues\TextCustomFieldValuesModel;
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\DateCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\NumericCustomFieldValueCollection;
-use AmoCRM\Models\CustomFieldsValues\ValueCollections\SelectCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\TextCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\DateCustomFieldValueModel;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\NumericCustomFieldValueModel;
-use AmoCRM\Models\CustomFieldsValues\ValueModels\SelectCustomFieldValueModel;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\TextCustomFieldValueModel;
 use AmoCRM\Filters\CompaniesFilter;
 use AmoCRM\Filters\ContactsFilter;
@@ -449,15 +446,6 @@ class AmoService
                 );
         }
 
-        if ($this->isLeadSelectField($fieldId)) {
-            return (new SelectCustomFieldValuesModel())
-                ->setFieldId($fieldId)
-                ->setValues(
-                    (new SelectCustomFieldValueCollection())
-                        ->add((new SelectCustomFieldValueModel())->setValue((string)$value))
-                );
-        }
-
         return (new TextCustomFieldValuesModel())
             ->setFieldId($fieldId)
             ->setValues(
@@ -488,20 +476,6 @@ class AmoService
         ];
 
         return in_array($fieldId, $numericFields, true);
-    }
-
-    protected function isLeadSelectField(int $fieldId): bool
-    {
-        $selectFields = [
-            (int)(CrmSchema::FIELDS['lead']['period_subscribe']['id'] ?? 0),
-            (int)(CrmSchema::FIELDS['lead']['payment_method']['id'] ?? 0),
-            (int)(CrmSchema::FIELDS['lead']['customer_type']['id'] ?? 0),
-            (int)(CrmSchema::FIELDS['lead']['origin']['id'] ?? 0),
-            (int)(CrmSchema::FIELDS['lead']['recurrent_type']['id'] ?? 0),
-            (int)(CrmSchema::FIELDS['lead']['status']['id'] ?? 0),
-        ];
-
-        return in_array($fieldId, $selectFields, true);
     }
 
     public function linkProductsToLead(LeadModel $lead, array $productIds): bool
