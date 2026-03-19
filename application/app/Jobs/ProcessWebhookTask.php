@@ -17,7 +17,6 @@ use AmoCRM\Models\CustomFieldsValues\ValueModels\MultitextCustomFieldValueModel;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\TextCustomFieldValueModel;
 use AmoCRM\Models\LeadModel;
 use App\Models\WebhookTask;
-use App\Models\WebhookTaskLog;
 use App\Services\AmoService;
 use App\Services\ProductService;
 use App\Support\CrmSchema;
@@ -94,9 +93,7 @@ class ProcessWebhookTask implements ShouldQueue
 
         } catch (Throwable $e) {
 
-            Log::error('Ошибка обработки: ' . $e->getFile().' '.$e->getLine().' '.$e->getMessage(), [
-                'stack' => $e->getTrace()
-            ]);
+            Log::error('Ошибка обработки: ' . $e->getFile().' '.$e->getLine().' '.$e->getMessage());
         }
     }
 
@@ -609,14 +606,6 @@ class ProcessWebhookTask implements ShouldQueue
     {
         $this->task->update([
             'task_complete' => true,
-        ]);
-    }
-
-    protected function log(string $message): void
-    {
-        WebhookTaskLog::query()->create([
-            'task_id' => $this->task->id,
-            'message' => $message,
         ]);
     }
 }
