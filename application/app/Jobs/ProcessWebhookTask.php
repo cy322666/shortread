@@ -288,13 +288,15 @@ class ProcessWebhookTask implements ShouldQueue
 
             $companyInfo = $payload['client']['company_info'] ?? [];
             $inn = (string)($companyInfo['inn'] ?? '');
+            $kpp = (string)($companyInfo['kpp'] ?? '');
+            $address = (string)($companyInfo['address'] ?? '');
             $companyName = $companyInfo['organisation_name'] ?? 'Без названия';
 
             $company = $inn !== '' ? $amoService->getCompanyByINN($inn) : null;
 
             if ($company && $company->getId()) {
 
-                $companyToUpdate = $this->buildCompanyModel($company->getId(), $companyName, $inn);
+                $companyToUpdate = $this->buildCompanyModel($company->getId(), $companyName, $inn, $kpp, $address);
 
                 return $amoService->updateCompany($companyToUpdate);
             }
@@ -302,6 +304,8 @@ class ProcessWebhookTask implements ShouldQueue
             $companyFields = [];
 
             $this->appendCustomField($companyFields, CrmSchema::FIELDS['company']['inn']['id'], $inn);
+            $this->appendCustomField($companyFields, CrmSchema::FIELDS['company']['kpp']['id'], $kpp);
+            $this->appendCustomField($companyFields, CrmSchema::FIELDS['company']['address']['id'], $address);
 
             return $amoService->createCompany([
                 'name' => $companyName,
@@ -314,24 +318,58 @@ class ProcessWebhookTask implements ShouldQueue
         }
     }
 
-    protected function buildCompanyModel(int $companyId, string $companyName, string $inn): CompanyModel
+    protected function buildCompanyModel(
+        int $companyId,
+        string $companyName,
+        string $inn,
+        string $kpp = '',
+        string $address = ''
+    ): CompanyModel
     {
         $company = new CompanyModel();
         $company->setId($companyId);
         $company->setName($companyName);
 
         $innFieldId = (int)(CrmSchema::FIELDS['company']['inn']['id'] ?? 0);
+        $kppFieldId = (int)(CrmSchema::FIELDS['company']['kpp']['id'] ?? 0);
+        $addressFieldId = (int)(CrmSchema::FIELDS['company']['address']['id'] ?? 0);
 
-        if ($innFieldId > 0 && $inn !== '') {
+        if (($innFieldId > 0 && $inn !== '') || ($kppFieldId > 0 && $kpp !== '') || ($addressFieldId > 0 && $address !== '')) {
             $fields = new CustomFieldsValuesCollection();
-            $fields->add(
-                (new TextCustomFieldValuesModel())
-                    ->setFieldId($innFieldId)
-                    ->setValues(
-                        (new TextCustomFieldValueCollection())
-                            ->add((new TextCustomFieldValueModel())->setValue($inn))
-                    )
-            );
+
+            if ($innFieldId > 0 && $inn !== '') {
+                $fields->add(
+                    (new TextCustomFieldValuesModel())
+                        ->setFieldId($innFieldId)
+                        ->setValues(
+                            (new TextCustomFieldValueCollection())
+                                ->add((new TextCustomFieldValueModel())->setValue($inn))
+                        )
+                );
+            }
+
+            if ($kppFieldId > 0 && $kpp !== '') {
+                $fields->add(
+                    (new TextCustomFieldValuesModel())
+                        ->setFieldId($kppFieldId)
+                        ->setValues(
+                            (new TextCustomFieldValueCollection())
+                                ->add((new TextCustomFieldValueModel())->setValue($kpp))
+                        )
+                );
+            }
+
+            if ($addressFieldId > 0 && $address !== '') {
+                $fields->add(
+                    (new TextCustomFieldValuesModel())
+                        ->setFieldId($addressFieldId)
+                        ->setValues(
+                            (new TextCustomFieldValueCollection())
+                                ->add((new TextCustomFieldValueModel())->setValue($address))
+                        )
+                );
+            }
+
             $company->setCustomFieldsValues($fields);
         }
 
