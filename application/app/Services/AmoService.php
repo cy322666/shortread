@@ -418,16 +418,17 @@ class AmoService
     protected function makeLeadCustomFieldModel(array $fieldData): ?BaseCustomFieldValuesModel
     {
         $fieldId = (int)($fieldData['field_id'] ?? 0);
+        $fieldCode = isset($fieldData['field_code']) ? (string)$fieldData['field_code'] : null;
         $value = $fieldData['values'][0]['value'] ?? null;
 
-        if ($fieldId <= 0 || $value === null || $value === '') {
+        if (($fieldId <= 0 && empty($fieldCode)) || $value === null || $value === '') {
             return null;
         }
 
         if ($this->isLeadDateField($fieldId)) {
             try {
                 return (new DateCustomFieldValuesModel())
-                    ->setFieldId($fieldId)
+                    ->setFieldId($fieldId > 0 ? $fieldId : null)
                     ->setValues(
                         (new DateCustomFieldValueCollection())
                             ->add((new DateCustomFieldValueModel())->setValue($value))
@@ -439,19 +440,24 @@ class AmoService
 
         if ($this->isLeadNumericField($fieldId)) {
             return (new NumericCustomFieldValuesModel())
-                ->setFieldId($fieldId)
+                ->setFieldId($fieldId > 0 ? $fieldId : null)
                 ->setValues(
                     (new NumericCustomFieldValueCollection())
                         ->add((new NumericCustomFieldValueModel())->setValue(is_numeric($value) ? $value + 0 : $value))
                 );
         }
 
-        return (new TextCustomFieldValuesModel())
-            ->setFieldId($fieldId)
-            ->setValues(
-                (new TextCustomFieldValueCollection())
-                    ->add((new TextCustomFieldValueModel())->setValue((string)$value))
-            );
+        $model = new TextCustomFieldValuesModel();
+        if ($fieldId > 0) {
+            $model->setFieldId($fieldId);
+        } elseif (!empty($fieldCode)) {
+            $model->setFieldCode($fieldCode);
+        }
+
+        return $model->setValues(
+            (new TextCustomFieldValueCollection())
+                ->add((new TextCustomFieldValueModel())->setValue((string)$value))
+        );
     }
 
     protected function isLeadDateField(int $fieldId): bool

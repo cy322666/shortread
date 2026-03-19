@@ -4,15 +4,15 @@ namespace App\Support;
 
 class CrmSchema
 {
-    public const STATUS_CHECKOUT_STARTED = 81927994; //первый
+    public const STATUS_CHECKOUT_VIEWED = 81927994; //первый
     public const STATUS_PAYMENT_COMPLETE = 142;
     public const STATUS_PAYMENT_FAILED = 83819658;
     public const STATUS_ORDER_ABANDONED = 81926778;
     public const STATUS_RECURRENT_PAYMENT = 142;
 
     public const STATUSES = [
-        'checkout_started' => [
-            'id' => self::STATUS_CHECKOUT_STARTED,
+        'checkout_viewed' => [
+            'id' => self::STATUS_CHECKOUT_VIEWED,
             'name' => 'Начало оформления',
         ],
         'payment_complete' => [
@@ -92,8 +92,12 @@ class CrmSchema
                 'name' => 'Наименование товара',
             ],
             'access_count' => [
-                'id' => 0,
+                'id' => 409153,
                 'name' => 'Количество доступов',
+            ],
+            'is_recurrent' => [
+                'id' => 409155,
+                'name' => 'Рекуррентный заказ',
             ],
             'error_reason' => [
                 'id' => 0,
@@ -108,7 +112,7 @@ class CrmSchema
                 'name' => 'Дата окончания подписки',
             ],
             'recurrent_type' => [
-                'id' => 0,
+                'id' => 409157,
                 'name' => 'Тип продления',
             ],
         ],

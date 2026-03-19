@@ -178,7 +178,7 @@ class ProcessWebhookTask implements ShouldQueue
             return 'order_abandoned';
         }
 
-        return 'checkout_started';
+        return 'checkout_viewed';
     }
 
     protected function isOlderThanMinutes(mixed $value, int $minutes): bool
@@ -432,15 +432,35 @@ class ProcessWebhookTask implements ShouldQueue
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['subtotal']['id'], $order['subtotal'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['quantity']['id'], $order['quantity'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['total']['id'], $order['total'] ?? null);
-        // NOTE: origin is a select field in amoCRM and may reject unknown values.
-        // We skip it for now to avoid blocking lead creation until enum sync is implemented.
-        // $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['origin']['id'], $order['origin'] ?? null);
+        $this->appendCustomField(
+            $leadData['custom_fields_values'],
+            (int) (CrmSchema::FIELDS['lead']['origin']['id'] ?? 348279),
+            'shortread.ru'
+        );
+        $leadData['custom_fields_values'][] = [
+            'field_code' => 'UTM_SOURCE',
+            'values' => [
+                ['value' => $this->normalizeUtmSource($order['origin'] ?? null)],
+            ],
+        ];
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['product_name']['id'], $firstItem['product_name'] ?? null);
-        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('access_count'), $order['access_count'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('access_count'), $order['quantity'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('error_reason'), $errorReason);
         $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('subscription_start_at'), $this->timestampValue($order['subscription_start_at'] ?? null));
         $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('subscription_end_at'), $this->timestampValue($order['subscription_end_at'] ?? null));
-        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('recurrent_type'), $order['recurrent_type'] ?? null);
+        $this->appendCustomField(
+            $leadData['custom_fields_values'],
+            $this->leadFieldId('recurrent_type'),
+            $this->normalizeRecurrentType($order['recurrent_type'] ?? null)
+        );
+
+        if (array_key_exists('is_recurrent', $order)) {
+            $this->appendCustomField(
+                $leadData['custom_fields_values'],
+                $this->leadFieldId('is_recurrent'),
+                $order['is_recurrent'] ? 'true' : 'false'
+            );
+        }
 
         if (array_key_exists('is_company', $order)) {
 
@@ -537,7 +557,23 @@ class ProcessWebhookTask implements ShouldQueue
             return is_numeric($value) ? (float) $value : $value;
         }
 
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
         return (string) $value;
+    }
+
+    protected function normalizeRecurrentType(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = mb_strtolower(trim((string) $value));
+        $allowed = ['recurrent', 'autopay', 'normal'];
+
+        return in_array($normalized, $allowed, true) ? $normalized : null;
     }
 
     protected function leadFieldId(string $key): int
@@ -553,6 +589,20 @@ class ProcessWebhookTask implements ShouldQueue
 
         $timestamp = strtotime((string) $value);
         return $timestamp === false ? null : $timestamp;
+    }
+
+    protected function normalizeUtmSource(mixed $origin): string
+    {
+        $value = mb_strtolower(trim((string)$origin));
+        if ($value === '') {
+            return 'direct';
+        }
+
+        if ($value === '(direct)') {
+            return 'direct';
+        }
+
+        return $value;
     }
 
     protected function markComplete(): void
