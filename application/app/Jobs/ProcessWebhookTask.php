@@ -47,14 +47,13 @@ class ProcessWebhookTask implements ShouldQueue
             $payload = $this->extractPayload($content);
             $scenario = $this->detectScenario($content, $payload);
 
-            if ($scenario === 'user_registered') {
-                $contact = $this->resolveRegisteredUserContact($payload, $amoService);
-
-                $this->task->scenario = $scenario;
-                $this->task->contact_id = $contact?->getId();
+            if ($scenario === null) {
+                Log::info(__METHOD__ . ': skip unsupported event', [
+                    'event' => (string)($content['event'] ?? ''),
+                ]);
+                $this->task->scenario = null;
                 $this->task->task_complete = true;
                 $this->task->save();
-
                 return;
             }
 
@@ -142,18 +141,30 @@ class ProcessWebhookTask implements ShouldQueue
         return $content;
     }
 
-    protected function detectScenario(array $content, array $payload): string
+    protected function detectScenario(array $content, array $payload): ?string
     {
         $event = (string) ($content['event'] ?? '');
+        $event = mb_strtolower(trim($event));
 
-        if ($event === 'user_registered') {
-            return 'user_registered';
+        $supported = ['checkout_viewed', 'payment_complete', 'payment_failed', 'order_abandoned', 'recurrent_payment'];
+        if (in_array($event, $supported, true)) {
+            return $event;
         }
 
-        if (array_key_exists($event, CrmSchema::STATUSES))
+        if ($event === 'status_changed') {
+            $hint = mb_strtolower(trim((string)($payload['event'] ?? $payload['scenario'] ?? '')));
+            if (in_array($hint, $supported, true)) {
+                return $hint;
+            }
 
-            return $event;
+            return $this->mapStatusChangedScenario($payload);
+        }
 
+        return null;
+    }
+
+    protected function mapStatusChangedScenario(array $payload): ?string
+    {
         $order = $payload['order'] ?? [];
         $status = mb_strtolower((string) ($order['status'] ?? ''));
         $paidAt = trim((string) ($order['paid_at'] ?? ''));
@@ -167,7 +178,7 @@ class ProcessWebhookTask implements ShouldQueue
             return 'payment_complete';
         }
 
-        if ($status === 'cancelled') {
+        if (in_array($status, ['cancelled', 'failed'], true)) {
             return 'payment_failed';
         }
 
@@ -175,7 +186,7 @@ class ProcessWebhookTask implements ShouldQueue
             return 'order_abandoned';
         }
 
-        return 'checkout_viewed';
+        return null;
     }
 
     protected function isOlderThanMinutes(mixed $value, int $minutes): bool
