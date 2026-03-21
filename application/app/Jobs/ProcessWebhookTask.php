@@ -174,7 +174,7 @@ class ProcessWebhookTask implements ShouldQueue
             return 'recurrent_payment';
         }
 
-        if ($status === 'processing' && $paidAt !== '') {
+        if (in_array($status, ['processing', 'completed'], true) && $paidAt !== '') {
             return 'payment_complete';
         }
 
