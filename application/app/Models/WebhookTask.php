@@ -11,6 +11,7 @@ class WebhookTask extends Model
 
     protected $fillable = [
         'task_content',
+        'order_id',
         'task_complete',
         'lead_id',
         'contact_id',

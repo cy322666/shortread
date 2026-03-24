@@ -300,16 +300,14 @@ class AmoService
 
             foreach ($leads ?? [] as $lead) {
 
-                if ($fieldId > 0) {
+                foreach ($lead->getCustomFieldsValues() ?? [] as $customField) {
+                    if ($fieldId > 0 && (int)$customField->getFieldId() !== (int)$fieldId) {
+                        continue;
+                    }
 
-                    foreach ($lead->getCustomFieldsValues() ?? [] as $customField) {
-
-                        foreach ($customField->getValues() ?? [] as $valueModel) {
-
-                            if ((string) $valueModel->getValue() === $orderId) {
-
-                                return $lead;
-                            }
+                    foreach ($customField->getValues() ?? [] as $valueModel) {
+                        if ((string) $valueModel->getValue() === $orderId) {
+                            return $lead;
                         }
                     }
                 }
@@ -323,6 +321,23 @@ class AmoService
         } catch (AmoCRMMissedTokenException|AmoCRMoAuthApiException|AmoCRMApiException $e) {
 
             Log::error("AmoCRM findLeadByOrderId error: " . $e->getMessage(), [
+                'code' => $e->getCode(),
+                'description' => method_exists($e, 'getDescription') ? $e->getDescription() : null,
+                'last_request' => method_exists($e, 'getLastRequestInfo') ? $e->getLastRequestInfo() : null,
+            ]);
+
+            return null;
+        }
+    }
+
+    public function getLeadById(int $leadId): ?LeadModel
+    {
+        try {
+            return $this->client->leads()->getOne($leadId);
+        } catch (AmoCRMApiNoContentException) {
+            return null;
+        } catch (AmoCRMMissedTokenException|AmoCRMoAuthApiException|AmoCRMApiException $e) {
+            Log::error("AmoCRM getLeadById error: " . $e->getMessage(), [
                 'code' => $e->getCode(),
                 'description' => method_exists($e, 'getDescription') ? $e->getDescription() : null,
                 'last_request' => method_exists($e, 'getLastRequestInfo') ? $e->getLastRequestInfo() : null,

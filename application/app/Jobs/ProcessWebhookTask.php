@@ -45,6 +45,10 @@ class ProcessWebhookTask implements ShouldQueue
         try {
             $content = $this->task->task_content;
             $payload = $this->extractPayload($content);
+            $orderId = $payload['order']['order_id'] ?? null;
+            if ($orderId !== null && $orderId !== '' && (string)$this->task->order_id !== (string)$orderId) {
+                $this->task->order_id = (string)$orderId;
+            }
             $scenario = $this->detectScenario($content, $payload);
 
             if ($scenario === null) {
@@ -390,29 +394,83 @@ class ProcessWebhookTask implements ShouldQueue
     protected function upsertLead(string $scenario, array $payload, ContactModel $contact, ?CompanyModel $company, AmoService $amoService): LeadModel
     {
         $orderId = $payload['order']['order_id'] ?? null;
+        $orderIdString = $orderId !== null && $orderId !== '' ? (string)$orderId : null;
 
         $leadData = $this->buildLeadData($scenario, $payload, $contact->getId(), $company?->getId());
 
-        if ($orderId) {
+        if ($orderIdString !== null) {
 
-            $lead = $amoService->findLeadByOrder((string)$orderId);
+            $existingLeadId = $this->findLinkedLeadIdByOrder($orderIdString);
+
+            if ($existingLeadId !== null) {
+
+                $linkedLead = $amoService->getLeadById($existingLeadId);
+
+                if ($linkedLead instanceof LeadModel) {
+
+                    if ($scenario === 'order_abandoned' && $this->isLeadAlreadyPaid($linkedLead)) {
+
+                        Log::info(__METHOD__ . ': skip abandoned update for paid lead', [
+                            'lead_id' => $linkedLead->getId(),
+                            'order_id' => $orderIdString,
+                        ]);
+
+                        return $linkedLead;
+                    }
+
+                    $updated = $amoService->updateLead($linkedLead->getId(), $leadData);
+
+                    if (!$updated) {
+
+                        throw new \RuntimeException(sprintf(
+                            'Failed to update lead %d for scenario %s (order_id=%s)',
+                            (int)$linkedLead->getId(),
+                            $scenario,
+                            $orderIdString
+                        ));
+                    }
+
+                    return $linkedLead;
+                }
+            }
+
+            $lead = $amoService->findLeadByOrder($orderIdString);
 
             if ($lead) {
                 if ($scenario === 'order_abandoned' && $this->isLeadAlreadyPaid($lead)) {
                     Log::info(__METHOD__ . ': skip abandoned update for paid lead', [
                         'lead_id' => $lead->getId(),
-                        'order_id' => $orderId,
+                        'order_id' => $orderIdString,
                     ]);
                     return $lead;
                 }
 
-                $amoService->updateLead($lead->getId(), $leadData);
+                $updated = $amoService->updateLead($lead->getId(), $leadData);
+                if (!$updated) {
+                    throw new \RuntimeException(sprintf(
+                        'Failed to update lead %d for scenario %s (order_id=%s)',
+                        (int)$lead->getId(),
+                        $scenario,
+                        $orderIdString
+                    ));
+                }
 
                 return $lead;
             }
         }
 
         return $amoService->createLead($leadData);
+    }
+
+    protected function findLinkedLeadIdByOrder(string $orderId): ?int
+    {
+        $leadId = WebhookTask::query()
+            ->where('order_id', $orderId)
+            ->whereNotNull('lead_id')
+            ->orderBy('id')
+            ->value('lead_id');
+
+        return $leadId !== null ? (int)$leadId : null;
     }
 
     protected function isLeadAlreadyPaid(LeadModel $lead): bool
