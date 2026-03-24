@@ -37,16 +37,23 @@ class ProductService
      */
     public function findOrCreate(string $name, array $item): CatalogElementModel
     {
+        $targetPrice = $this->normalizePrice($item['price'] ?? 0);
+
         try {
+            $filter = new CatalogElementsFilter();
+            $filter->setQuery($name);
+
             $products = $this->client
                 ->catalogElements($this->catalogId)
-                ->get();
+                ->get($filter);
 
             foreach ($products as $product) {
-
-                if ($product->getName() === $name)
-
+                if (
+                    $product->getName() === $name
+                    && $this->pricesAreEqual($this->extractProductPrice($product), $targetPrice)
+                ) {
                     return $product;
+                }
             }
 
         } catch (AmoCRMApiNoContentException) {}
@@ -122,5 +129,41 @@ class ProductService
         $collection->add($priceField);
 
         return $collection;
+    }
+
+    protected function extractProductPrice(CatalogElementModel $product): float
+    {
+        $priceFieldId = (int) CrmSchema::FIELDS['catalog']['fields']['price']['id'];
+
+        foreach ($product->getCustomFieldsValues() ?? [] as $field) {
+            if ((int) $field->getFieldId() !== $priceFieldId) {
+                continue;
+            }
+
+            foreach ($field->getValues() ?? [] as $valueModel) {
+                $value = $valueModel->getValue();
+                if ($value === null || $value === '') {
+                    continue;
+                }
+
+                return $this->normalizePrice($value);
+            }
+        }
+
+        return 0.0;
+    }
+
+    protected function normalizePrice(mixed $value): float
+    {
+        if (is_string($value)) {
+            $value = str_replace(',', '.', trim($value));
+        }
+
+        return is_numeric($value) ? (float) $value : 0.0;
+    }
+
+    protected function pricesAreEqual(float $left, float $right): bool
+    {
+        return abs($left - $right) < 0.0001;
     }
 }
