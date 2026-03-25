@@ -509,10 +509,11 @@ class ProcessWebhookTask implements ShouldQueue
     {
         $order = $payload['order'] ?? [];
         $firstItem = $payload['items'][0] ?? [];
+        $leadBudget = (isset($order['total']) && is_numeric($order['total'])) ? (int)$order['total'] : 0;
 
         $leadData = [
             'name' => ($firstItem['product_name'] ?? '') . '/' . ($order['order_id'] ?? ''),
-            'price' => $order['total'] ?? 0,
+            'price' => $leadBudget,
             'custom_fields_values' => [],
             'contacts' => $contactId ? [['id' => $contactId]] : [],
             'company' => $companyId ? ['id' => $companyId] : null,
