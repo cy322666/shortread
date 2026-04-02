@@ -382,6 +382,9 @@ class AmoService
         if (isset($leadData['status_id']))
             $lead->setStatusId((int)$leadData['status_id']);
 
+        if (isset($leadData['closed_at']) && is_numeric($leadData['closed_at']))
+            $lead->setClosedAt((int)$leadData['closed_at']);
+
         if (!empty($leadData['custom_fields_values'])) {
             $fieldsCollection = new CustomFieldsValuesCollection();
 

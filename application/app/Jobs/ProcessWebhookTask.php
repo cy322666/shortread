@@ -519,6 +519,11 @@ class ProcessWebhookTask implements ShouldQueue
             'company' => $companyId ? ['id' => $companyId] : null,
         ];
 
+        $closedAt = $this->resolveLeadClosedAt($scenario, $order);
+        if ($closedAt !== null) {
+            $leadData['closed_at'] = $closedAt;
+        }
+
         $statusId = (int) (CrmSchema::STATUSES[$scenario]['id'] ?? 0);
 
         if ($statusId > 0)
@@ -577,6 +582,34 @@ class ProcessWebhookTask implements ShouldQueue
         }
 
         return $leadData;
+    }
+
+    protected function resolveLeadClosedAt(string $scenario, array $order): ?int
+    {
+        if ($scenario === 'checkout_viewed') {
+            return null;
+        }
+
+        if (in_array($scenario, ['payment_complete', 'recurrent_payment'], true)) {
+            return $this->timestampValue($order['paid_at'] ?? null)
+                ?? $this->timestampValue($order['created_at'] ?? null)
+                ?? now()->timestamp;
+        }
+
+        if ($scenario === 'payment_failed') {
+            return $this->timestampValue($order['created_at'] ?? null) ?? now()->timestamp;
+        }
+
+        if ($scenario === 'order_abandoned') {
+            $createdAt = $this->timestampValue($order['created_at'] ?? null);
+            if ($createdAt !== null) {
+                return $createdAt + (30 * 60);
+            }
+
+            return now()->timestamp;
+        }
+
+        return null;
     }
 
     /**
