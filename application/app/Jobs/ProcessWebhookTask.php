@@ -183,7 +183,7 @@ class ProcessWebhookTask implements ShouldQueue
             return 'on_hold';
         }
 
-        if (in_array($status, ['processing', 'completed'], true) && $paidAt !== '') {
+        if (in_array($status, ['processing', 'completed'], true)) {
             return 'payment_complete';
         }
 
