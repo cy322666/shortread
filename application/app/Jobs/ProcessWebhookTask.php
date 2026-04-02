@@ -200,9 +200,10 @@ class ProcessWebhookTask implements ShouldQueue
         $order = $payload['order'] ?? [];
         $status = mb_strtolower((string) ($order['status'] ?? ''));
         $paidAt = trim((string) ($order['paid_at'] ?? ''));
-        $isRecurrent = !empty($order['is_recurrent']) && ($order['recurrent_type'] ?? '') === 'autopay';
+        $recurrentType = mb_strtolower(trim((string)($order['recurrent_type'] ?? '')));
+        $isRecurrentAutopay = !empty($order['is_recurrent']) && $recurrentType === 'autopay';
 
-        if ($isRecurrent) {
+        if ($isRecurrentAutopay && ($paidAt !== '' || in_array($status, ['processing', 'completed'], true))) {
             return 'recurrent_payment';
         }
 
