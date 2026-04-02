@@ -77,6 +77,13 @@ class ProcessWebhookTask implements ShouldQueue
             }
 
             $contact = $this->resolveContact($payload, $amoService);
+            if (!$contact || !$contact->getId()) {
+                Log::warning(__METHOD__ . ': unresolved contact, continue lead sync without contact link', [
+                    'task_id' => $this->task->id,
+                    'order_id' => $orderId,
+                    'email' => (string)($payload['client']['email'] ?? ''),
+                ]);
+            }
 
             $company = $this->resolveCompany($payload, $amoService);
 
@@ -85,7 +92,9 @@ class ProcessWebhookTask implements ShouldQueue
 
             if ($company?->getId()) {
                 $amoService->linkCompanyToLead($lead, (int)$company->getId());
-                $amoService->linkCompanyToContact($contact, (int)$company->getId());
+                if ($contact?->getId()) {
+                    $amoService->linkCompanyToContact($contact, (int)$company->getId());
+                }
             }
 
             if (!empty($payload['items']) && is_array($payload['items'])) {
@@ -103,7 +112,7 @@ class ProcessWebhookTask implements ShouldQueue
 
             $this->task->scenario = $scenario;
             $this->task->products = $productIds ?? [];
-            $this->task->contact_id = $contact->getId();
+            $this->task->contact_id = $contact?->getId();
             $this->task->company_id = $company?->getId();
             $this->task->lead_id = $lead?->getId();
             $this->task->task_complete = true;
@@ -417,7 +426,7 @@ class ProcessWebhookTask implements ShouldQueue
     protected function upsertLead(
         string $scenario,
         array $payload,
-        ContactModel $contact,
+        ?ContactModel $contact,
         ?CompanyModel $company,
         AmoService $amoService,
         bool $isBackfill = false
@@ -426,7 +435,7 @@ class ProcessWebhookTask implements ShouldQueue
         $orderId = $payload['order']['order_id'] ?? null;
         $orderIdString = $orderId !== null && $orderId !== '' ? (string)$orderId : null;
 
-        $leadData = $this->buildLeadData($scenario, $payload, $contact->getId(), $company?->getId(), $isBackfill);
+        $leadData = $this->buildLeadData($scenario, $payload, $contact?->getId(), $company?->getId(), $isBackfill);
 
         if ($orderIdString !== null) {
 
@@ -552,7 +561,18 @@ class ProcessWebhookTask implements ShouldQueue
                 'error' => $e->getMessage(),
             ]);
 
-            return $amoService->createLead($fallbackData);
+            try {
+                return $amoService->createLead($fallbackData);
+            } catch (Throwable $retryError) {
+                $minimalData = $this->buildMinimalLeadDataForRetry($leadData);
+
+                Log::warning(__METHOD__ . ': retry create lead with minimal fields', [
+                    'order_id' => $orderId,
+                    'error' => $retryError->getMessage(),
+                ]);
+
+                return $amoService->createLead($minimalData);
+            }
         }
     }
 
@@ -589,6 +609,72 @@ class ProcessWebhookTask implements ShouldQueue
         ));
 
         return $leadData;
+    }
+
+    protected function buildMinimalLeadDataForRetry(array $leadData): array
+    {
+        $minimal = [
+            'name' => (string)($leadData['name'] ?? 'Заказ'),
+            'price' => (int)($leadData['price'] ?? 0),
+            'custom_fields_values' => [],
+        ];
+
+        if (!empty($leadData['status_id'])) {
+            $minimal['status_id'] = (int)$leadData['status_id'];
+        }
+
+        if (!empty($leadData['closed_at'])) {
+            $minimal['closed_at'] = (int)$leadData['closed_at'];
+        }
+
+        if (!empty($leadData['tags_to_add']) && is_array($leadData['tags_to_add'])) {
+            $minimal['tags_to_add'] = $leadData['tags_to_add'];
+        }
+
+        if (!empty($leadData['contacts']) && is_array($leadData['contacts'])) {
+            $contacts = [];
+            foreach ($leadData['contacts'] as $contactData) {
+                if (!is_array($contactData) || empty($contactData['id'])) {
+                    continue;
+                }
+                $contacts[] = ['id' => (int)$contactData['id']];
+            }
+            if (!empty($contacts)) {
+                $minimal['contacts'] = $contacts;
+            }
+        }
+
+        if (!empty($leadData['company']['id'])) {
+            $minimal['company'] = ['id' => (int)$leadData['company']['id']];
+        }
+
+        $orderFieldId = (int)(CrmSchema::FIELDS['lead']['order_id']['id'] ?? 0);
+        if ($orderFieldId > 0 && !empty($leadData['custom_fields_values']) && is_array($leadData['custom_fields_values'])) {
+            foreach ($leadData['custom_fields_values'] as $fieldData) {
+                if (!is_array($fieldData)) {
+                    continue;
+                }
+
+                if ((int)($fieldData['field_id'] ?? 0) !== $orderFieldId) {
+                    continue;
+                }
+
+                $value = $fieldData['values'][0]['value'] ?? null;
+                if ($value === null || $value === '') {
+                    continue;
+                }
+
+                $minimal['custom_fields_values'][] = [
+                    'field_id' => $orderFieldId,
+                    'values' => [
+                        ['value' => (string)$value],
+                    ],
+                ];
+                break;
+            }
+        }
+
+        return $minimal;
     }
 
     protected function findLinkedLeadIdByOrder(string $orderId): ?int
@@ -638,7 +724,7 @@ class ProcessWebhookTask implements ShouldQueue
     protected function buildLeadData(
         string $scenario,
         array $payload,
-        int $contactId,
+        ?int $contactId,
         ?int $companyId,
         bool $isBackfill = false
     ): array
