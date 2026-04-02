@@ -430,7 +430,13 @@ class ProcessWebhookTask implements ShouldQueue
                         return $linkedLead;
                     }
 
-                    $updated = $amoService->updateLead($linkedLead->getId(), $leadData);
+                    $updated = $this->updateLeadWithFallback(
+                        $amoService,
+                        (int)$linkedLead->getId(),
+                        $leadData,
+                        $isBackfill,
+                        $orderIdString
+                    );
 
                     if (!$updated) {
 
@@ -457,7 +463,13 @@ class ProcessWebhookTask implements ShouldQueue
                     return $lead;
                 }
 
-                $updated = $amoService->updateLead($lead->getId(), $leadData);
+                $updated = $this->updateLeadWithFallback(
+                    $amoService,
+                    (int)$lead->getId(),
+                    $leadData,
+                    $isBackfill,
+                    $orderIdString
+                );
                 if (!$updated) {
                     throw new \RuntimeException(sprintf(
                         'Failed to update lead %d for scenario %s (order_id=%s)',
@@ -471,7 +483,94 @@ class ProcessWebhookTask implements ShouldQueue
             }
         }
 
-        return $amoService->createLead($leadData);
+        return $this->createLeadWithFallback($amoService, $leadData, $isBackfill, $orderIdString);
+    }
+
+    protected function updateLeadWithFallback(
+        AmoService $amoService,
+        int $leadId,
+        array $leadData,
+        bool $allowFallback,
+        ?string $orderId
+    ): bool {
+        $updated = $amoService->updateLead($leadId, $leadData);
+        if ($updated || !$allowFallback) {
+            return $updated;
+        }
+
+        $fallbackData = $this->sanitizeLeadDataForRetry($leadData);
+        if ($fallbackData === $leadData) {
+            return false;
+        }
+
+        Log::warning(__METHOD__ . ': retry update lead with sanitized fields', [
+            'lead_id' => $leadId,
+            'order_id' => $orderId,
+        ]);
+
+        return $amoService->updateLead($leadId, $fallbackData);
+    }
+
+    protected function createLeadWithFallback(
+        AmoService $amoService,
+        array $leadData,
+        bool $allowFallback,
+        ?string $orderId
+    ): LeadModel {
+        try {
+            return $amoService->createLead($leadData);
+        } catch (Throwable $e) {
+            if (!$allowFallback) {
+                throw $e;
+            }
+
+            $fallbackData = $this->sanitizeLeadDataForRetry($leadData);
+            if ($fallbackData === $leadData) {
+                throw $e;
+            }
+
+            Log::warning(__METHOD__ . ': retry create lead with sanitized fields', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $amoService->createLead($fallbackData);
+        }
+    }
+
+    protected function sanitizeLeadDataForRetry(array $leadData): array
+    {
+        $blockedFieldIds = array_values(array_filter([
+            (int)(CrmSchema::FIELDS['lead']['status']['id'] ?? 0),
+            (int)(CrmSchema::FIELDS['lead']['period_subscribe']['id'] ?? 0),
+            (int)(CrmSchema::FIELDS['lead']['payment_method']['id'] ?? 0),
+            (int)(CrmSchema::FIELDS['lead']['customer_type']['id'] ?? 0),
+            (int)(CrmSchema::FIELDS['lead']['origin']['id'] ?? 0),
+            (int)($this->leadFieldId('is_recurrent')),
+            (int)($this->leadFieldId('recurrent_type')),
+        ]));
+
+        if (empty($blockedFieldIds) || empty($leadData['custom_fields_values']) || !is_array($leadData['custom_fields_values'])) {
+            return $leadData;
+        }
+
+        $leadData['custom_fields_values'] = array_values(array_filter(
+            $leadData['custom_fields_values'],
+            static function ($fieldData) use ($blockedFieldIds) {
+                if (!is_array($fieldData)) {
+                    return false;
+                }
+
+                $fieldId = (int)($fieldData['field_id'] ?? 0);
+                if ($fieldId > 0 && in_array($fieldId, $blockedFieldIds, true)) {
+                    return false;
+                }
+
+                return true;
+            }
+        ));
+
+        return $leadData;
     }
 
     protected function findLinkedLeadIdByOrder(string $orderId): ?int
