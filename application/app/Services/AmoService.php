@@ -430,6 +430,30 @@ class AmoService
             $lead->setCompany($company);
         }
 
+        if (!empty($leadData['tags_to_add']) && is_array($leadData['tags_to_add'])) {
+            $tagsToAdd = [];
+
+            foreach ($leadData['tags_to_add'] as $tagData) {
+                if (is_string($tagData)) {
+                    $name = trim($tagData);
+                } elseif (is_array($tagData)) {
+                    $name = trim((string)($tagData['name'] ?? ''));
+                } else {
+                    $name = '';
+                }
+
+                if ($name === '') {
+                    continue;
+                }
+
+                $tagsToAdd[] = ['name' => $name];
+            }
+
+            if (!empty($tagsToAdd)) {
+                $lead->setTagsToAdd($tagsToAdd);
+            }
+        }
+
         return $lead;
     }
 

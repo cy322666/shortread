@@ -45,6 +45,7 @@ class ProcessWebhookTask implements ShouldQueue
         try {
             $content = $this->task->task_content;
             $payload = $this->extractPayload($content);
+            $isBackfill = !empty($content['_backfill']);
             $orderId = $payload['order']['order_id'] ?? null;
             if ($orderId !== null && $orderId !== '' && (string)$this->task->order_id !== (string)$orderId) {
                 $this->task->order_id = (string)$orderId;
@@ -75,7 +76,7 @@ class ProcessWebhookTask implements ShouldQueue
 
             $company = $this->resolveCompany($payload, $amoService);
 
-            $lead = $this->upsertLead($scenario, $payload, $contact, $company, $amoService);
+            $lead = $this->upsertLead($scenario, $payload, $contact, $company, $amoService, $isBackfill);
 
             if ($company?->getId()) {
                 $amoService->linkCompanyToLead($lead, (int)$company->getId());
@@ -391,12 +392,19 @@ class ProcessWebhookTask implements ShouldQueue
         return $company;
     }
 
-    protected function upsertLead(string $scenario, array $payload, ContactModel $contact, ?CompanyModel $company, AmoService $amoService): LeadModel
+    protected function upsertLead(
+        string $scenario,
+        array $payload,
+        ContactModel $contact,
+        ?CompanyModel $company,
+        AmoService $amoService,
+        bool $isBackfill = false
+    ): LeadModel
     {
         $orderId = $payload['order']['order_id'] ?? null;
         $orderIdString = $orderId !== null && $orderId !== '' ? (string)$orderId : null;
 
-        $leadData = $this->buildLeadData($scenario, $payload, $contact->getId(), $company?->getId());
+        $leadData = $this->buildLeadData($scenario, $payload, $contact->getId(), $company?->getId(), $isBackfill);
 
         if ($orderIdString !== null) {
 
@@ -505,7 +513,13 @@ class ProcessWebhookTask implements ShouldQueue
         return false;
     }
 
-    protected function buildLeadData(string $scenario, array $payload, int $contactId, ?int $companyId): array
+    protected function buildLeadData(
+        string $scenario,
+        array $payload,
+        int $contactId,
+        ?int $companyId,
+        bool $isBackfill = false
+    ): array
     {
         $order = $payload['order'] ?? [];
         $firstItem = $payload['items'][0] ?? [];
@@ -579,6 +593,12 @@ class ProcessWebhookTask implements ShouldQueue
                 CrmSchema::FIELDS['lead']['customer_type']['id'],
                 $order['is_company'] ? 'Юр.лицо' : 'Физ.лицо'
             );
+        }
+
+        if ($isBackfill) {
+            $leadData['tags_to_add'] = [
+                ['name' => 'backfill'],
+            ];
         }
 
         return $leadData;

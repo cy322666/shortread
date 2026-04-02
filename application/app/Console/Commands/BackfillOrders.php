@@ -111,6 +111,7 @@ class BackfillOrders extends Command
             $content = [
                 'event' => 'status_changed',
                 'payload' => $payload,
+                '_backfill' => true,
             ];
 
             $scenario = $this->detectScenario($scenarioDetector, $content, $payload);
