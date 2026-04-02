@@ -219,6 +219,14 @@ class ProcessWebhookTask implements ShouldQueue
             return 'payment_failed';
         }
 
+        if ($status === 'pending' && $paidAt === '') {
+            if ($this->isOlderThanMinutes($order['created_at'] ?? null, 30)) {
+                return 'order_abandoned';
+            }
+
+            return 'checkout_viewed';
+        }
+
         if ($paidAt === '' && $status !== 'processing' && $this->isOlderThanMinutes($order['created_at'] ?? null, 30)) {
             return 'order_abandoned';
         }
