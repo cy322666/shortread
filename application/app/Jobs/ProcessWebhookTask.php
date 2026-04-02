@@ -549,12 +549,13 @@ class ProcessWebhookTask implements ShouldQueue
         $nextPaymentAt = $this->resolveNextPaymentAt($order, $firstItem);
         $resolvedRecurrentType = $this->resolveRecurrentType($order, $firstItem);
         $resolvedIsRecurrent = $this->resolveIsRecurrent($order, $resolvedRecurrentType, $firstItem);
+        $paidAtValue = $this->resolvePaidAtValue($scenario, $order);
 
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['order_id']['id'], $order['order_id'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['parent_order_id']['id'], $order['parent_order_id'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['product']['id'], $order['product'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['created_at']['id'], $this->timestampValue($order['created_at'] ?? null));
-        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['paid_at']['id'], $this->timestampValue($order['paid_at'] ?? null));
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['paid_at']['id'], $paidAtValue);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['status']['id'], $order['status'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['period_subscribe']['id'], $periodSubscribe);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['payment_method']['id'], $order['payment_method'] ?? null);
@@ -666,6 +667,20 @@ class ProcessWebhookTask implements ShouldQueue
         } catch (Throwable) {
             return null;
         }
+    }
+
+    protected function resolvePaidAtValue(string $scenario, array $order): ?int
+    {
+        $paidAt = $this->timestampValue($order['paid_at'] ?? null);
+        if ($paidAt !== null) {
+            return $paidAt;
+        }
+
+        if (in_array($scenario, ['payment_complete', 'recurrent_payment'], true)) {
+            return $this->timestampValue($order['created_at'] ?? null);
+        }
+
+        return null;
     }
 
     protected function resolveRecurrentType(array $order, array $firstItem): ?string
