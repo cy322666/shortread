@@ -70,6 +70,7 @@ class BackfillOrders extends Command
             'before_from' => 0,
             'invalid_row' => 0,
             'unsupported' => 0,
+            'forced_scenario' => 0,
             'scenario_filtered' => 0,
             'already_processed' => 0,
             'requeued_missing_lead' => 0,
@@ -132,6 +133,11 @@ class BackfillOrders extends Command
             ];
 
             $scenario = $this->detectScenario($scenarioDetector, $content, $payload);
+            if ($scenario === null && $onlyScenario !== '') {
+                $scenario = $onlyScenario;
+                $stats['forced_scenario']++;
+            }
+
             if ($scenario === null) {
                 $stats['unsupported']++;
                 continue;

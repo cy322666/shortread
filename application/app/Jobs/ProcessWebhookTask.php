@@ -764,7 +764,7 @@ class ProcessWebhookTask implements ShouldQueue
             return null;
         }
 
-        if (in_array($scenario, ['payment_complete', 'recurrent_payment'], true)) {
+        if (in_array($scenario, ['payment_complete', 'recurrent_payment', 'on_hold'], true)) {
             return $this->timestampValue($order['paid_at'] ?? null)
                 ?? $this->timestampValue($order['created_at'] ?? null)
                 ?? now()->timestamp;
