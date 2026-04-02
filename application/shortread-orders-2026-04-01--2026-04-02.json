@@ -1,0 +1,1755 @@
+[
+    {
+        "order": {
+            "order_id": 41286,
+            "created_at": "2026-04-02T17:46:53+03:00",
+            "paid_at": "2026-04-02T17:46:58+03:00",
+            "status": "processing",
+            "client": "krivosheevata",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40654
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "krivosheevata",
+            "username": "krivosheevata",
+            "email": "krivosheevata@yandex.ru",
+            "user_id": 20955
+        }
+    },
+    {
+        "order": {
+            "order_id": 41283,
+            "created_at": "2026-04-02T17:14:10+03:00",
+            "paid_at": "2026-04-02T17:15:43+03:00",
+            "status": "processing",
+            "client": "vask95msal",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "yandex.ru",
+            "period_subscribe": "m",
+            "access_count": 1,
+            "is_recurrent": true,
+            "recurrent_type": "recurrent"
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "vask95msal",
+            "username": "vask95msal",
+            "email": "vask95msal@gmail.com",
+            "user_id": 21072
+        }
+    },
+    {
+        "order": {
+            "order_id": 41279,
+            "created_at": "2026-04-02T16:46:59+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "krivosheevata",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40654
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "krivosheevata",
+            "username": "krivosheevata",
+            "email": "krivosheevata@yandex.ru",
+            "user_id": 20955
+        }
+    },
+    {
+        "order": {
+            "order_id": 41278,
+            "created_at": "2026-04-02T16:13:38+03:00",
+            "paid_at": "2026-04-02T16:14:29+03:00",
+            "status": "processing",
+            "client": "advokat.ib",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "google",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "advokat.ib",
+            "username": "advokat.ib",
+            "email": "advokat.ib@gmail.com",
+            "user_id": 21071
+        }
+    },
+    {
+        "order": {
+            "order_id": 41275,
+            "created_at": "2026-04-02T13:47:00+03:00",
+            "paid_at": "2026-04-02T13:47:06+03:00",
+            "status": "processing",
+            "client": "6754916",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40645
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "6754916",
+            "username": "6754916",
+            "email": "6754916@gmail.com",
+            "user_id": 15827
+        }
+    },
+    {
+        "order": {
+            "order_id": 41274,
+            "created_at": "2026-04-02T13:46:54+03:00",
+            "paid_at": "2026-04-02T13:46:56+03:00",
+            "status": "processing",
+            "client": "german.derbushev",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40647
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "german.derbushev",
+            "username": "german.derbushev",
+            "email": "german.derbushev@nextons.ru",
+            "user_id": 20950
+        }
+    },
+    {
+        "order": {
+            "order_id": 41270,
+            "created_at": "2026-04-02T12:53:33+03:00",
+            "paid_at": "2026-04-02T12:55:28+03:00",
+            "status": "processing",
+            "client": "ms.sanches",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "yandex.ru",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "ms.sanches",
+            "username": "ms.sanches",
+            "email": "ms.sanches@list.ru",
+            "user_id": 21070
+        }
+    },
+    {
+        "order": {
+            "order_id": 41268,
+            "created_at": "2026-04-01T21:46:53+03:00",
+            "paid_at": "2026-04-01T21:46:57+03:00",
+            "status": "processing",
+            "client": "yaromirss",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40623
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "yaromirss",
+            "username": "yaromirss",
+            "email": "yaromirss@mail.ru",
+            "user_id": 20945
+        }
+    },
+    {
+        "order": {
+            "order_id": 41267,
+            "created_at": "2026-04-01T21:02:51+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": true,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "metrika.yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Зачет требований и возмещение сразу по двум полисам: ВС выпустил первый в 2026 году обзор судебной практики"
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41266,
+            "created_at": "2026-04-01T21:00:16+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": true,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "metrika.yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Зачет требований и возмещение сразу по двум полисам: ВС выпустил первый в 2026 году обзор судебной практики"
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41265,
+            "created_at": "2026-04-01T20:56:27+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": true,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "metrika.yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Зачет требований и возмещение сразу по двум полисам: ВС выпустил первый в 2026 году обзор судебной практики"
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41264,
+            "created_at": "2026-04-01T20:53:35+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": true,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "metrika.yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Зачет требований и возмещение сразу по двум полисам: ВС выпустил первый в 2026 году обзор судебной практики"
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41263,
+            "created_at": "2026-04-01T20:51:33+03:00",
+            "paid_at": "2026-04-02T16:45:39+03:00",
+            "status": "completed",
+            "client": "protect_pravo@mail.ru",
+            "product": "Подписка",
+            "payment_method": "Прямой банковский перевод",
+            "is_company": true,
+            "subtotal": 8999,
+            "quantity": 1,
+            "total": 8999,
+            "origin": "yandex",
+            "period_subscribe": "y",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_yearly_recurrent",
+                "product_name": "Подписка",
+                "price": 8999
+            }
+        ],
+        "client": {
+            "pseudonym": "protect_pravo@mail.ru",
+            "username": "protect_pravo@mail.ru",
+            "email": "protect_pravo@mail.ru",
+            "user_id": 12168,
+            "company_info": {
+                "organisation_name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \\\"ПРОТЕКТ.ПРАВОВЫЕ ТЕХНОЛОГИИ\\\"",
+                "inn": "0277901100",
+                "kpp": "027701001",
+                "address": "г Уфа, ул Российская, д 12/1, офис 303"
+            }
+        }
+    },
+    {
+        "order": {
+            "order_id": 41262,
+            "created_at": "2026-04-01T20:50:48+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": true,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "metrika.yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Зачет требований и возмещение сразу по двум полисам: ВС выпустил первый в 2026 году обзор судебной практики"
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41261,
+            "created_at": "2026-04-01T20:50:03+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": true,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "metrika.yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Зачет требований и возмещение сразу по двум полисам: ВС выпустил первый в 2026 году обзор судебной практики"
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41260,
+            "created_at": "2026-04-01T20:49:28+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": true,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "metrika.yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Зачет требований и возмещение сразу по двум полисам: ВС выпустил первый в 2026 году обзор судебной практики"
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41259,
+            "created_at": "2026-04-01T20:48:30+03:00",
+            "paid_at": "",
+            "status": "on-hold",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "Прямой банковский перевод",
+            "is_company": true,
+            "subtotal": 49990,
+            "quantity": 10,
+            "total": 49990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "y",
+            "access_count": 10
+        },
+        "items": [
+            {
+                "format": "subscription_yearly_recurrent",
+                "product_name": "Подписка",
+                "price": 4999
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41258,
+            "created_at": "2026-04-01T20:45:47+03:00",
+            "paid_at": "",
+            "status": "on-hold",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "Прямой банковский перевод",
+            "is_company": true,
+            "subtotal": 49990,
+            "quantity": 10,
+            "total": 49990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "y",
+            "access_count": 10
+        },
+        "items": [
+            {
+                "format": "subscription_yearly_recurrent",
+                "product_name": "Подписка",
+                "price": 4999
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41257,
+            "created_at": "2026-04-01T20:44:43+03:00",
+            "paid_at": "",
+            "status": "on-hold",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "Прямой банковский перевод",
+            "is_company": true,
+            "subtotal": 49990,
+            "quantity": 10,
+            "total": 49990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "y",
+            "access_count": 10
+        },
+        "items": [
+            {
+                "format": "subscription_yearly_recurrent",
+                "product_name": "Подписка",
+                "price": 4999
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41256,
+            "created_at": "2026-04-01T20:44:05+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 8999,
+            "quantity": 1,
+            "total": 8999,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "y",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_yearly_recurrent",
+                "product_name": "Подписка",
+                "price": 8999
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41255,
+            "created_at": "2026-04-01T20:42:59+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41254,
+            "created_at": "2026-04-01T20:40:03+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41253,
+            "created_at": "2026-04-01T20:31:02+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": true,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "metrika.yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Зачет требований и возмещение сразу по двум полисам: ВС выпустил первый в 2026 году обзор судебной практики"
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41252,
+            "created_at": "2026-04-01T20:08:50+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41251,
+            "created_at": "2026-04-01T20:05:11+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41250,
+            "created_at": "2026-04-01T20:02:33+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41249,
+            "created_at": "2026-04-01T19:55:44+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "test2",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "metrika.yandex.ru",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "test2",
+            "username": "test2",
+            "email": "test2@test.ru",
+            "user_id": 21019
+        }
+    },
+    {
+        "order": {
+            "order_id": 41248,
+            "created_at": "2026-04-01T18:04:14+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "(direct)",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "",
+            "username": "",
+            "email": "kolya10999111@gmail.com",
+            "user_id": null
+        }
+    },
+    {
+        "order": {
+            "order_id": 41247,
+            "created_at": "2026-04-01T17:37:05+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "tekwin",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "tg",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "tekwin",
+            "username": "tekwin",
+            "email": "Tekwin@mail.ru",
+            "user_id": 20461
+        }
+    },
+    {
+        "order": {
+            "order_id": 41246,
+            "created_at": "2026-04-01T17:36:19+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "tekwin",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "tg",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "tekwin",
+            "username": "tekwin",
+            "email": "Tekwin@mail.ru",
+            "user_id": 20461
+        }
+    },
+    {
+        "order": {
+            "order_id": 41245,
+            "created_at": "2026-04-01T17:33:19+03:00",
+            "paid_at": "2026-04-01T17:38:06+03:00",
+            "status": "processing",
+            "client": "tekwin",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "tg",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "tekwin",
+            "username": "tekwin",
+            "email": "Tekwin@mail.ru",
+            "user_id": 20461
+        }
+    },
+    {
+        "order": {
+            "order_id": 41244,
+            "created_at": "2026-04-01T16:37:14+03:00",
+            "paid_at": "2026-04-01T16:38:23+03:00",
+            "status": "processing",
+            "client": "sisekin",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "google"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Новые правила расчета действительной стоимости доли в ООО: обзор поправок"
+            }
+        ],
+        "client": {
+            "pseudonym": "sisekin",
+            "username": "sisekin",
+            "email": "sisekin@mail.ru",
+            "user_id": 16734
+        }
+    },
+    {
+        "order": {
+            "order_id": 41243,
+            "created_at": "2026-04-01T13:48:05+03:00",
+            "paid_at": "2026-04-01T13:48:26+03:00",
+            "status": "processing",
+            "client": "ar-nikolaev",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 749,
+            "quantity": 1,
+            "total": 749,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 35795
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 749
+            }
+        ],
+        "client": {
+            "pseudonym": "ar-nikolaev",
+            "username": "ar-nikolaev",
+            "email": "ar-nikolaev@yandex.ru",
+            "user_id": 20003
+        }
+    },
+    {
+        "order": {
+            "order_id": 41242,
+            "created_at": "2026-04-01T13:47:48+03:00",
+            "paid_at": "2026-04-01T13:48:22+03:00",
+            "status": "processing",
+            "client": "kosgr44",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 749,
+            "quantity": 1,
+            "total": 749,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 35806
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 749
+            }
+        ],
+        "client": {
+            "pseudonym": "kosgr44",
+            "username": "kosgr44",
+            "email": "kosgr44@yandex.ru",
+            "user_id": 20009
+        }
+    },
+    {
+        "order": {
+            "order_id": 41241,
+            "created_at": "2026-04-01T13:47:31+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "dobrenkovdv",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "yandex.ru"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Почему для юриста 10+168=169? Комментарий Романа Бевзенко к норме о недобросовестных сделках"
+            }
+        ],
+        "client": {
+            "pseudonym": "dobrenkovdv",
+            "username": "dobrenkovdv",
+            "email": "dobrenkovdv@mail.ru",
+            "user_id": 21068
+        }
+    },
+    {
+        "order": {
+            "order_id": 41240,
+            "created_at": "2026-04-01T13:47:31+03:00",
+            "paid_at": "2026-04-01T13:48:14+03:00",
+            "status": "processing",
+            "client": "a.e.kasimova",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 749,
+            "quantity": 1,
+            "total": 749,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 36995
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 749
+            }
+        ],
+        "client": {
+            "pseudonym": "a.e.kasimova",
+            "username": "a.e.kasimova",
+            "email": "a.e.kasimova@gmail.com",
+            "user_id": 20204
+        }
+    },
+    {
+        "order": {
+            "order_id": 41239,
+            "created_at": "2026-04-01T13:47:13+03:00",
+            "paid_at": "2026-04-01T13:48:00+03:00",
+            "status": "processing",
+            "client": "nikitavilenskiy200",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 749,
+            "quantity": 1,
+            "total": 749,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 37001
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 749
+            }
+        ],
+        "client": {
+            "pseudonym": "nikitavilenskiy200",
+            "username": "nikitavilenskiy200",
+            "email": "nikitavilenskiy200@gmail.com",
+            "user_id": 16011
+        }
+    },
+    {
+        "order": {
+            "order_id": 41238,
+            "created_at": "2026-04-01T13:46:57+03:00",
+            "paid_at": "2026-04-01T13:47:56+03:00",
+            "status": "processing",
+            "client": "rodney.korir",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 749,
+            "quantity": 1,
+            "total": 749,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 37097
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 749
+            }
+        ],
+        "client": {
+            "pseudonym": "rodney.korir",
+            "username": "rodney.korir",
+            "email": "rodney.korir@gmail.com",
+            "user_id": 20219
+        }
+    },
+    {
+        "order": {
+            "order_id": 41237,
+            "created_at": "2026-04-01T13:46:52+03:00",
+            "paid_at": "2026-04-01T13:46:57+03:00",
+            "status": "processing",
+            "client": "tatiana.lashina",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 749,
+            "quantity": 1,
+            "total": 749,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 37123
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 749
+            }
+        ],
+        "client": {
+            "pseudonym": "tatiana.lashina",
+            "username": "tatiana.lashina",
+            "email": "tatiana.lashina@gmail.com",
+            "user_id": 16894
+        }
+    },
+    {
+        "order": {
+            "order_id": 41236,
+            "created_at": "2026-04-01T12:47:13+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "zva38",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40120
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "zva38",
+            "username": "zva38",
+            "email": "zva38@mail.ru",
+            "user_id": 1114
+        }
+    },
+    {
+        "order": {
+            "order_id": 41235,
+            "created_at": "2026-04-01T12:36:13+03:00",
+            "paid_at": "2026-04-01T12:36:46+03:00",
+            "status": "processing",
+            "client": "elizavetaabashkina3108",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "google",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "elizavetaabashkina3108",
+            "username": "elizavetaabashkina3108",
+            "email": "elizavetaabashkina3108@gmail.com",
+            "user_id": 21067
+        }
+    },
+    {
+        "order": {
+            "order_id": 41234,
+            "created_at": "2026-04-01T12:33:05+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "elizavetaabashkina3108",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "google",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "elizavetaabashkina3108",
+            "username": "elizavetaabashkina3108",
+            "email": "elizavetaabashkina3108@gmail.com",
+            "user_id": 21067
+        }
+    },
+    {
+        "order": {
+            "order_id": 41233,
+            "created_at": "2026-04-01T12:31:02+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "elizavetaabashkina3108",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "google",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "elizavetaabashkina3108",
+            "username": "elizavetaabashkina3108",
+            "email": "elizavetaabashkina3108@gmail.com",
+            "user_id": 21067
+        }
+    },
+    {
+        "order": {
+            "order_id": 41232,
+            "created_at": "2026-04-01T11:47:23+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "zva38",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40120
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "zva38",
+            "username": "zva38",
+            "email": "zva38@mail.ru",
+            "user_id": 1114
+        }
+    },
+    {
+        "order": {
+            "order_id": 41229,
+            "created_at": "2026-04-01T10:46:52+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "zva38",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40120
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "zva38",
+            "username": "zva38",
+            "email": "zva38@mail.ru",
+            "user_id": 1114
+        }
+    },
+    {
+        "order": {
+            "order_id": 41228,
+            "created_at": "2026-04-01T10:23:32+03:00",
+            "paid_at": "2026-04-01T10:24:15+03:00",
+            "status": "processing",
+            "client": "elizavet01.04.2000",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "google"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Новые правила расчета действительной стоимости доли в ООО: обзор поправок"
+            }
+        ],
+        "client": {
+            "pseudonym": "elizavet01.04.2000",
+            "username": "elizavet01.04.2000",
+            "email": "elizavet01.04.2000@gmail.com",
+            "user_id": 8894
+        }
+    },
+    {
+        "order": {
+            "order_id": 41227,
+            "created_at": "2026-04-01T10:20:17+03:00",
+            "paid_at": "",
+            "status": "cancelled",
+            "client": "elizavet01.04.2000",
+            "product": "Покупка статьи:",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 499,
+            "quantity": 1,
+            "total": 499,
+            "origin": "google"
+        },
+        "items": [
+            {
+                "format": "single_article_purchase",
+                "product_name": "Покупка статьи:",
+                "price": 499,
+                "article_title": "Новые правила расчета действительной стоимости доли в ООО: обзор поправок"
+            }
+        ],
+        "client": {
+            "pseudonym": "elizavet01.04.2000",
+            "username": "elizavet01.04.2000",
+            "email": "elizavet01.04.2000@gmail.com",
+            "user_id": 8894
+        }
+    },
+    {
+        "order": {
+            "order_id": 41226,
+            "created_at": "2026-04-01T09:46:54+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "zva38",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40120
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "zva38",
+            "username": "zva38",
+            "email": "zva38@mail.ru",
+            "user_id": 1114
+        }
+    },
+    {
+        "order": {
+            "order_id": 41225,
+            "created_at": "2026-04-01T09:15:02+03:00",
+            "paid_at": "2026-04-01T09:15:53+03:00",
+            "status": "processing",
+            "client": "andreeff.i2016",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "(direct)",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "andreeff.i2016",
+            "username": "andreeff.i2016",
+            "email": "andreeff.i2016@yandex.ru",
+            "user_id": 11435
+        }
+    },
+    {
+        "order": {
+            "order_id": 41224,
+            "created_at": "2026-04-01T08:46:56+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "zva38",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40120
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "zva38",
+            "username": "zva38",
+            "email": "zva38@mail.ru",
+            "user_id": 1114
+        }
+    },
+    {
+        "order": {
+            "order_id": 41223,
+            "created_at": "2026-04-01T07:47:24+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "GoogleUser171",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40122
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "Татьяна А",
+            "username": "GoogleUser171",
+            "email": "tatiana.y.0201@gmail.com",
+            "user_id": 8480
+        }
+    },
+    {
+        "order": {
+            "order_id": 41222,
+            "created_at": "2026-04-01T06:47:01+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "GoogleUser171",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40122
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "Татьяна А",
+            "username": "GoogleUser171",
+            "email": "tatiana.y.0201@gmail.com",
+            "user_id": 8480
+        }
+    },
+    {
+        "order": {
+            "order_id": 41221,
+            "created_at": "2026-04-01T05:46:53+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "GoogleUser171",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40122
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "Татьяна А",
+            "username": "GoogleUser171",
+            "email": "tatiana.y.0201@gmail.com",
+            "user_id": 8480
+        }
+    },
+    {
+        "order": {
+            "order_id": 41220,
+            "created_at": "2026-04-01T04:46:52+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "GoogleUser171",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40122
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "Татьяна А",
+            "username": "GoogleUser171",
+            "email": "tatiana.y.0201@gmail.com",
+            "user_id": 8480
+        }
+    },
+    {
+        "order": {
+            "order_id": 41219,
+            "created_at": "2026-04-01T03:47:04+03:00",
+            "paid_at": "",
+            "status": "pending",
+            "client": "GoogleUser171",
+            "product": "Подписка",
+            "payment_method": "yookassa_epl",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "direct",
+            "is_recurrent": true,
+            "recurrent_type": "autopay",
+            "parent_order_id": 40122
+        },
+        "items": [
+            {
+                "format": "subscription_monthly",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "Татьяна А",
+            "username": "GoogleUser171",
+            "email": "tatiana.y.0201@gmail.com",
+            "user_id": 8480
+        }
+    },
+    {
+        "order": {
+            "order_id": 41215,
+            "created_at": "2026-03-31T21:07:20+03:00",
+            "paid_at": "2026-03-31T21:08:19+03:00",
+            "status": "processing",
+            "client": "iruzanov",
+            "product": "Подписка",
+            "payment_method": "ЮKassa",
+            "is_company": false,
+            "subtotal": 990,
+            "quantity": 1,
+            "total": 990,
+            "origin": "(direct)",
+            "period_subscribe": "m",
+            "access_count": 1
+        },
+        "items": [
+            {
+                "format": "subscription_monthly_recurrent",
+                "product_name": "Подписка",
+                "price": 990
+            }
+        ],
+        "client": {
+            "pseudonym": "iruzanov",
+            "username": "iruzanov",
+            "email": "iruzanov@yandex.ru",
+            "user_id": 1248
+        }
+    }
+]
