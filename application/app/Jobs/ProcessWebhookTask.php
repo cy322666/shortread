@@ -732,6 +732,7 @@ class ProcessWebhookTask implements ShouldQueue
     {
         $order = $payload['order'] ?? [];
         $firstItem = $payload['items'][0] ?? [];
+        $leadProductName = $this->resolveLeadProductName($order, $firstItem);
         $leadBudget = (isset($order['total']) && is_numeric($order['total'])) ? (int)$order['total'] : 0;
 
         $leadData = [
@@ -782,7 +783,7 @@ class ProcessWebhookTask implements ShouldQueue
                 ['value' => $this->normalizeUtmSource($order['origin'] ?? null)],
             ],
         ];
-        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['product_name']['id'], $firstItem['product_name'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['product_name']['id'], $leadProductName);
         $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('access_count'), $accessCount);
         $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('error_reason'), $errorReason);
         $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('subscription_start_at'), $this->timestampValue($order['subscription_start_at'] ?? null));
@@ -827,6 +828,25 @@ class ProcessWebhookTask implements ShouldQueue
         }
 
         return $leadData;
+    }
+
+    protected function resolveLeadProductName(array $order, array $firstItem): ?string
+    {
+        $articleTitle = trim((string)($firstItem['article_title'] ?? ''));
+        if ($articleTitle !== '' && $this->isArticlePurchase($order, $firstItem)) {
+            return $articleTitle;
+        }
+
+        $fallback = trim((string)($firstItem['product_name'] ?? ($order['product'] ?? '')));
+        return $fallback !== '' ? $fallback : null;
+    }
+
+    protected function isArticlePurchase(array $order, array $firstItem): bool
+    {
+        $product = mb_strtolower(trim((string)($order['product'] ?? ($firstItem['product_name'] ?? ''))));
+        $format = mb_strtolower(trim((string)($firstItem['format'] ?? '')));
+
+        return str_contains($product, 'покупка статьи') || str_contains($format, 'article');
     }
 
     protected function resolvePeriodSubscribe(array $order, array $firstItem): ?string
