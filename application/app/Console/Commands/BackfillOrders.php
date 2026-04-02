@@ -90,6 +90,7 @@ class BackfillOrders extends Command
         }
         $scenarioDetector = $this->buildScenarioDetector();
         $leadExistsCache = [];
+        $failedOrderIds = [];
 
         $bar = $this->output->createProgressBar(count($rows));
         $bar->start();
@@ -203,6 +204,7 @@ class BackfillOrders extends Command
                 $stats['processed_ok']++;
             } else {
                 $stats['processed_error']++;
+                $failedOrderIds[] = $orderId;
             }
         }
 
@@ -219,6 +221,9 @@ class BackfillOrders extends Command
         $this->line('  force: ' . ($force ? 'yes' : 'no'));
         foreach ($stats as $key => $value) {
             $this->line("  {$key}: {$value}");
+        }
+        if (!empty($failedOrderIds)) {
+            $this->line('  failed_order_ids: ' . implode(',', array_values(array_unique($failedOrderIds))));
         }
 
         return self::SUCCESS;
