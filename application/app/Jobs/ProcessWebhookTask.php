@@ -546,6 +546,9 @@ class ProcessWebhookTask implements ShouldQueue
         $errorReason = $order['error_reason'] ?? ($order['fail_reason'] ?? ($order['error'] ?? null));
         $periodSubscribe = $this->resolvePeriodSubscribe($order, $firstItem);
         $accessCount = $order['access_count'] ?? ($order['quantity'] ?? null);
+        $nextPaymentAt = $this->resolveNextPaymentAt($order, $firstItem);
+        $resolvedRecurrentType = $this->resolveRecurrentType($order, $firstItem);
+        $resolvedIsRecurrent = $this->resolveIsRecurrent($order, $resolvedRecurrentType, $firstItem);
 
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['order_id']['id'], $order['order_id'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['parent_order_id']['id'], $order['parent_order_id'] ?? null);
@@ -576,19 +579,19 @@ class ProcessWebhookTask implements ShouldQueue
         $this->appendCustomField(
             $leadData['custom_fields_values'],
             $this->leadFieldId('subscription_end_at'),
-            $this->timestampValue($order['next_payment_at'] ?? ($order['subscription_end_at'] ?? null))
+            $nextPaymentAt
         );
         $this->appendCustomField(
             $leadData['custom_fields_values'],
             $this->leadFieldId('recurrent_type'),
-            $this->normalizeRecurrentType($order['recurrent_type'] ?? null)
+            $resolvedRecurrentType
         );
 
-        if (array_key_exists('is_recurrent', $order)) {
+        if ($resolvedIsRecurrent !== null) {
             $this->appendCustomField(
                 $leadData['custom_fields_values'],
                 $this->leadFieldId('is_recurrent'),
-                $order['is_recurrent'] ? 'true' : 'false'
+                $resolvedIsRecurrent ? 'true' : 'false'
             );
         }
 
@@ -628,6 +631,102 @@ class ProcessWebhookTask implements ShouldQueue
 
         if (str_contains($format, 'monthly')) {
             return 'm';
+        }
+
+        return null;
+    }
+
+    protected function resolveNextPaymentAt(array $order, array $firstItem): ?int
+    {
+        $explicit = $this->timestampValue($order['next_payment_at'] ?? ($order['subscription_end_at'] ?? null));
+        if ($explicit !== null) {
+            return $explicit;
+        }
+
+        $period = $this->resolvePeriodSubscribe($order, $firstItem);
+        if ($period === null) {
+            return null;
+        }
+
+        $baseTimestamp = $this->timestampValue($order['paid_at'] ?? null)
+            ?? $this->timestampValue($order['created_at'] ?? null);
+
+        if ($baseTimestamp === null) {
+            return null;
+        }
+
+        try {
+            $baseDate = Carbon::createFromTimestamp($baseTimestamp);
+
+            return match ($period) {
+                'm' => $baseDate->addMonthNoOverflow()->timestamp,
+                'y' => $baseDate->addYear()->timestamp,
+                default => null,
+            };
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    protected function resolveRecurrentType(array $order, array $firstItem): ?string
+    {
+        $explicit = $this->normalizeRecurrentType($order['recurrent_type'] ?? null);
+        if ($explicit !== null) {
+            return $explicit;
+        }
+
+        $format = mb_strtolower(trim((string)($firstItem['format'] ?? '')));
+        if ($format === '') {
+            return null;
+        }
+
+        if (str_contains($format, 'autopay')) {
+            return 'autopay';
+        }
+
+        if (str_contains($format, 'recurrent')) {
+            return 'recurrent';
+        }
+
+        if (str_contains($format, 'normal')) {
+            return 'normal';
+        }
+
+        return null;
+    }
+
+    protected function resolveIsRecurrent(array $order, ?string $recurrentType, array $firstItem): ?bool
+    {
+        if (array_key_exists('is_recurrent', $order)) {
+            $raw = $order['is_recurrent'];
+            if (is_bool($raw)) {
+                return $raw;
+            }
+
+            $normalized = mb_strtolower(trim((string)$raw));
+            if (in_array($normalized, ['1', 'true', 'yes', 'y'], true)) {
+                return true;
+            }
+            if (in_array($normalized, ['0', 'false', 'no', 'n'], true)) {
+                return false;
+            }
+        }
+
+        if ($recurrentType !== null) {
+            return $recurrentType !== 'normal';
+        }
+
+        $format = mb_strtolower(trim((string)($firstItem['format'] ?? '')));
+        if ($format === '') {
+            return null;
+        }
+
+        if (str_contains($format, 'normal')) {
+            return false;
+        }
+
+        if (str_contains($format, 'recurrent') || str_contains($format, 'autopay')) {
+            return true;
         }
 
         return null;

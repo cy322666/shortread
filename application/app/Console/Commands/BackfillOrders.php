@@ -17,6 +17,7 @@ class BackfillOrders extends Command
         {file=/Users/integrator/Downloads/shortread-orders-2025-12-25--2026-04-02.json : Path to source JSON file}
         {--from=2025-12-25 : Import orders created from this date (Y-m-d)}
         {--tail=0 : Process only last N rows from file (0 = all)}
+        {--order-id= : Process only this order_id}
         {--dry-run : Show counters only, do not create tasks}
         {--force : Process orders even if a task with lead_id already exists for the same order_id}';
 
@@ -77,6 +78,7 @@ class BackfillOrders extends Command
 
         $dryRun = (bool) $this->option('dry-run');
         $force = (bool) $this->option('force');
+        $orderIdFilter = trim((string) $this->option('order-id'));
         $scenarioDetector = $this->buildScenarioDetector();
         $leadExistsCache = [];
 
@@ -102,6 +104,10 @@ class BackfillOrders extends Command
             $orderId = trim((string) ($order['order_id'] ?? ''));
             if ($orderId === '') {
                 $stats['invalid_row']++;
+                continue;
+            }
+
+            if ($orderIdFilter !== '' && $orderId !== $orderIdFilter) {
                 continue;
             }
 
@@ -188,6 +194,7 @@ class BackfillOrders extends Command
         $this->line('  file: ' . $file);
         $this->line('  from: ' . $from->toDateString());
         $this->line('  tail: ' . ($tail > 0 ? (string) $tail : 'all'));
+        $this->line('  order_id: ' . ($orderIdFilter !== '' ? $orderIdFilter : 'all'));
         $this->line('  dry_run: ' . ($dryRun ? 'yes' : 'no'));
         $this->line('  force: ' . ($force ? 'yes' : 'no'));
         foreach ($stats as $key => $value) {
