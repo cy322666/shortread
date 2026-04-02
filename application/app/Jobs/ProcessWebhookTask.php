@@ -42,6 +42,10 @@ class ProcessWebhookTask implements ShouldQueue
 
     public function handle(AmoService $amoService)
     {
+        $scenario = null;
+        $payload = [];
+        $orderId = null;
+
         try {
             $content = $this->task->task_content;
             $payload = $this->extractPayload($content);
@@ -77,15 +81,25 @@ class ProcessWebhookTask implements ShouldQueue
             $company = $this->resolveCompany($payload, $amoService);
 
             $lead = $this->upsertLead($scenario, $payload, $contact, $company, $amoService, $isBackfill);
+            $productIds = [];
 
             if ($company?->getId()) {
                 $amoService->linkCompanyToLead($lead, (int)$company->getId());
                 $amoService->linkCompanyToContact($contact, (int)$company->getId());
             }
 
-            if (!empty($payload['items']) && is_array($payload['items']))
-
-                $productIds = $this->syncProductsToLead($lead, $payload['items'], $amoService);
+            if (!empty($payload['items']) && is_array($payload['items'])) {
+                try {
+                    $productIds = $this->syncProductsToLead($lead, $payload['items'], $amoService, $orderId);
+                } catch (Throwable $e) {
+                    Log::warning(__METHOD__ . ': product sync skipped due error', [
+                        'task_id' => $this->task->id,
+                        'order_id' => $orderId,
+                        'lead_id' => $lead?->getId(),
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
 
             $this->task->scenario = $scenario;
             $this->task->products = $productIds ?? [];
@@ -97,7 +111,11 @@ class ProcessWebhookTask implements ShouldQueue
 
         } catch (Throwable $e) {
 
-            Log::error('Ошибка обработки: ' . $e->getFile().' '.$e->getLine().' '.$e->getMessage());
+            Log::error('Ошибка обработки: ' . $e->getFile().' '.$e->getLine().' '.$e->getMessage(), [
+                'task_id' => $this->task->id,
+                'order_id' => $orderId,
+                'scenario' => $scenario,
+            ]);
         }
     }
 
@@ -891,7 +909,7 @@ class ProcessWebhookTask implements ShouldQueue
      * @throws AmoCRMMissedTokenException
      * @throws AmoCRMoAuthApiException
      */
-    protected function syncProductsToLead(LeadModel $lead, array $items, AmoService $amoService): array
+    protected function syncProductsToLead(LeadModel $lead, array $items, AmoService $amoService, mixed $orderId = null): array
     {
         $productService = new ProductService($amoService);
         $productIds = [];
@@ -902,9 +920,25 @@ class ProcessWebhookTask implements ShouldQueue
 
                 continue;
 
-            $product = $productService->findOrCreate($item['product_name'], [
-                'price' => $item['price']
-            ]);
+            $productName = trim((string)($item['product_name'] ?? ''));
+            if ($productName === '') {
+                continue;
+            }
+
+            try {
+                $product = $productService->findOrCreate($productName, [
+                    'price' => $item['price'] ?? 0
+                ]);
+            } catch (Throwable $e) {
+                Log::warning(__METHOD__ . ': skip product item due error', [
+                    'task_id' => $this->task->id,
+                    'order_id' => $orderId,
+                    'lead_id' => $lead->getId(),
+                    'product_name' => $productName,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
 
             $productIds[] = $product->getId();
         }
