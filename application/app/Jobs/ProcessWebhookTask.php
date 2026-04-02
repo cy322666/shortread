@@ -151,7 +151,7 @@ class ProcessWebhookTask implements ShouldQueue
         $event = (string) ($content['event'] ?? '');
         $event = mb_strtolower(trim($event));
 
-        $supported = ['checkout_viewed', 'payment_complete', 'payment_failed', 'order_abandoned', 'recurrent_payment'];
+        $supported = ['checkout_viewed', 'payment_complete', 'payment_failed', 'order_abandoned', 'recurrent_payment', 'on_hold'];
         if (in_array($event, $supported, true)) {
             return $event;
         }
@@ -177,6 +177,10 @@ class ProcessWebhookTask implements ShouldQueue
 
         if ($isRecurrent) {
             return 'recurrent_payment';
+        }
+
+        if (in_array($status, ['on-hold', 'on_hold'], true)) {
+            return 'on_hold';
         }
 
         if (in_array($status, ['processing', 'completed'], true) && $paidAt !== '') {
@@ -486,6 +490,7 @@ class ProcessWebhookTask implements ShouldQueue
         $paidStatusIds = [
             (int)(CrmSchema::STATUSES['payment_complete']['id'] ?? 0),
             (int)(CrmSchema::STATUSES['recurrent_payment']['id'] ?? 0),
+            (int)(CrmSchema::STATUSES['on_hold']['id'] ?? 0),
         ];
 
         if (in_array((int)$lead->getStatusId(), $paidStatusIds, true)) {
@@ -605,10 +610,16 @@ class ProcessWebhookTask implements ShouldQueue
             );
         }
 
+        $tagsToAdd = [];
         if ($isBackfill) {
-            $leadData['tags_to_add'] = [
-                ['name' => 'backfill'],
-            ];
+            $tagsToAdd[] = ['name' => 'backfill'];
+        }
+        if ($scenario === 'on_hold') {
+            $tagsToAdd[] = ['name' => 'на удержании'];
+        }
+
+        if (!empty($tagsToAdd)) {
+            $leadData['tags_to_add'] = $tagsToAdd;
         }
 
         return $leadData;

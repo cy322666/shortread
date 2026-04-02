@@ -9,6 +9,7 @@ class CrmSchema
     public const STATUS_PAYMENT_FAILED = 83819658;
     public const STATUS_ORDER_ABANDONED = 81926778;
     public const STATUS_RECURRENT_PAYMENT = 142;
+    public const STATUS_ON_HOLD = 84818974;
 
     public const STATUSES = [
         'checkout_viewed' => [
@@ -30,6 +31,10 @@ class CrmSchema
         'recurrent_payment' => [
             'id' => self::STATUS_RECURRENT_PAYMENT,
             'name' => 'Продление подписки',
+        ],
+        'on_hold' => [
+            'id' => self::STATUS_ON_HOLD,
+            'name' => 'На удержании',
         ],
     ];
 

@@ -18,6 +18,7 @@ class BackfillOrders extends Command
         {--from=2025-12-25 : Import orders created from this date (Y-m-d)}
         {--tail=0 : Process only last N rows from file (0 = all)}
         {--order-id= : Process only this order_id}
+        {--only-scenario= : Process only one scenario (checkout_viewed|payment_complete|payment_failed|order_abandoned|recurrent_payment|on_hold)}
         {--dry-run : Show counters only, do not create tasks}
         {--force : Process orders even if a task with lead_id already exists for the same order_id}';
 
@@ -69,6 +70,7 @@ class BackfillOrders extends Command
             'before_from' => 0,
             'invalid_row' => 0,
             'unsupported' => 0,
+            'scenario_filtered' => 0,
             'already_processed' => 0,
             'requeued_missing_lead' => 0,
             'queued' => 0,
@@ -79,6 +81,12 @@ class BackfillOrders extends Command
         $dryRun = (bool) $this->option('dry-run');
         $force = (bool) $this->option('force');
         $orderIdFilter = trim((string) $this->option('order-id'));
+        $onlyScenario = mb_strtolower(trim((string) $this->option('only-scenario')));
+        $allowedScenarios = ['checkout_viewed', 'payment_complete', 'payment_failed', 'order_abandoned', 'recurrent_payment', 'on_hold'];
+        if ($onlyScenario !== '' && !in_array($onlyScenario, $allowedScenarios, true)) {
+            $this->error('Invalid --only-scenario. Allowed: ' . implode(', ', $allowedScenarios));
+            return self::FAILURE;
+        }
         $scenarioDetector = $this->buildScenarioDetector();
         $leadExistsCache = [];
 
@@ -126,6 +134,11 @@ class BackfillOrders extends Command
             $scenario = $this->detectScenario($scenarioDetector, $content, $payload);
             if ($scenario === null) {
                 $stats['unsupported']++;
+                continue;
+            }
+
+            if ($onlyScenario !== '' && $scenario !== $onlyScenario) {
+                $stats['scenario_filtered']++;
                 continue;
             }
 
@@ -195,6 +208,7 @@ class BackfillOrders extends Command
         $this->line('  from: ' . $from->toDateString());
         $this->line('  tail: ' . ($tail > 0 ? (string) $tail : 'all'));
         $this->line('  order_id: ' . ($orderIdFilter !== '' ? $orderIdFilter : 'all'));
+        $this->line('  only_scenario: ' . ($onlyScenario !== '' ? $onlyScenario : 'all'));
         $this->line('  dry_run: ' . ($dryRun ? 'yes' : 'no'));
         $this->line('  force: ' . ($force ? 'yes' : 'no'));
         foreach ($stats as $key => $value) {
