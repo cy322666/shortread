@@ -92,7 +92,7 @@ class CrmSchema
                 'name' => 'Наименование товара',
             ],
             'access_count' => [
-                'id' => 348275,
+                'id' => 409153,
                 'name' => 'Количество доступов',
             ],
             'is_recurrent' => [
@@ -108,8 +108,8 @@ class CrmSchema
                 'name' => 'Дата начала подписки',
             ],
             'subscription_end_at' => [
-                'id' => 0,
-                'name' => 'Дата окончания подписки',
+                'id' => 372215,
+                'name' => 'Дата следующей оплаты',
             ],
             'recurrent_type' => [
                 'id' => 409157,

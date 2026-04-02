@@ -520,7 +520,6 @@ class AmoService
             (int)(CrmSchema::FIELDS['lead']['subtotal']['id'] ?? 0),
             (int)(CrmSchema::FIELDS['lead']['quantity']['id'] ?? 0),
             (int)(CrmSchema::FIELDS['lead']['total']['id'] ?? 0),
-            (int)(CrmSchema::FIELDS['lead']['access_count']['id'] ?? 0),
         ];
 
         return in_array($fieldId, $numericFields, true);

@@ -544,6 +544,8 @@ class ProcessWebhookTask implements ShouldQueue
             $leadData['status_id'] = $statusId;
 
         $errorReason = $order['error_reason'] ?? ($order['fail_reason'] ?? ($order['error'] ?? null));
+        $periodSubscribe = $this->resolvePeriodSubscribe($order, $firstItem);
+        $accessCount = $order['access_count'] ?? ($order['quantity'] ?? null);
 
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['order_id']['id'], $order['order_id'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['parent_order_id']['id'], $order['parent_order_id'] ?? null);
@@ -551,7 +553,7 @@ class ProcessWebhookTask implements ShouldQueue
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['created_at']['id'], $this->timestampValue($order['created_at'] ?? null));
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['paid_at']['id'], $this->timestampValue($order['paid_at'] ?? null));
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['status']['id'], $order['status'] ?? null);
-        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['period_subscribe']['id'], $order['period_subscribe'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['period_subscribe']['id'], $periodSubscribe);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['payment_method']['id'], $order['payment_method'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['subtotal']['id'], $order['subtotal'] ?? null);
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['quantity']['id'], $order['quantity'] ?? null);
@@ -568,10 +570,14 @@ class ProcessWebhookTask implements ShouldQueue
             ],
         ];
         $this->appendCustomField($leadData['custom_fields_values'], CrmSchema::FIELDS['lead']['product_name']['id'], $firstItem['product_name'] ?? null);
-        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('access_count'), $order['quantity'] ?? null);
+        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('access_count'), $accessCount);
         $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('error_reason'), $errorReason);
         $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('subscription_start_at'), $this->timestampValue($order['subscription_start_at'] ?? null));
-        $this->appendCustomField($leadData['custom_fields_values'], $this->leadFieldId('subscription_end_at'), $this->timestampValue($order['subscription_end_at'] ?? null));
+        $this->appendCustomField(
+            $leadData['custom_fields_values'],
+            $this->leadFieldId('subscription_end_at'),
+            $this->timestampValue($order['next_payment_at'] ?? ($order['subscription_end_at'] ?? null))
+        );
         $this->appendCustomField(
             $leadData['custom_fields_values'],
             $this->leadFieldId('recurrent_type'),
@@ -602,6 +608,29 @@ class ProcessWebhookTask implements ShouldQueue
         }
 
         return $leadData;
+    }
+
+    protected function resolvePeriodSubscribe(array $order, array $firstItem): ?string
+    {
+        $raw = $order['period_subscribe'] ?? null;
+        if ($raw !== null && $raw !== '') {
+            return (string) $raw;
+        }
+
+        $format = mb_strtolower((string)($firstItem['format'] ?? ''));
+        if ($format === '') {
+            return null;
+        }
+
+        if (str_contains($format, 'yearly')) {
+            return 'y';
+        }
+
+        if (str_contains($format, 'monthly')) {
+            return 'm';
+        }
+
+        return null;
     }
 
     protected function resolveLeadClosedAt(string $scenario, array $order): ?int
@@ -696,7 +725,6 @@ class ProcessWebhookTask implements ShouldQueue
             $this->leadFieldId('subtotal'),
             $this->leadFieldId('quantity'),
             $this->leadFieldId('total'),
-            $this->leadFieldId('access_count'),
         ];
 
         if (in_array($fieldId, $numericFields, true)) {
