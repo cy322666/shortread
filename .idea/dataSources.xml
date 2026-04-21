@@ -7,6 +7,9 @@
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://92.53.106.147:3306/cj27301_amocrm</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
+      <driver-properties>
+        <property name="tinyInt1isBit" value="true" />
+      </driver-properties>
     </data-source>
     <data-source source="LOCAL" name="database" uuid="5e8d5563-d59d-4917-9695-d8b8211a4b14">
       <driver-ref>sqlite.xerial</driver-ref>

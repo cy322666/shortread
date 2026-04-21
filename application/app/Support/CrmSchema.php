@@ -8,7 +8,7 @@ class CrmSchema
     public const STATUS_PAYMENT_COMPLETE = 142;
     public const STATUS_PAYMENT_FAILED = 83819658;
     public const STATUS_ORDER_ABANDONED = 81926778;
-    public const STATUS_RECURRENT_PAYMENT = 142;
+    public const STATUS_RECURRENT_PAYMENT = 85295250;
     public const STATUS_ON_HOLD = 84818974;
 
     public const STATUSES = [
