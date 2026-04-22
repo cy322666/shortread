@@ -1060,7 +1060,9 @@ class ProcessWebhookTask implements ShouldQueue
 
         $productIds = array_values(array_unique(array_filter($productIds)));
 
-        $amoService->linkProductsToLead($lead, $productIds);
+        if (!$amoService->linkProductsToLead($lead, $productIds)) {
+            throw new \RuntimeException('Failed to replace products on lead');
+        }
 
         return $productIds;
     }

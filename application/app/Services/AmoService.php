@@ -24,6 +24,7 @@ use AmoCRM\Models\CustomFieldsValues\ValueModels\TextCustomFieldValueModel;
 use AmoCRM\Filters\CompaniesFilter;
 use AmoCRM\Filters\ContactsFilter;
 use AmoCRM\Filters\LeadsFilter;
+use AmoCRM\Filters\LinksFilter;
 use AmoCRM\Collections\LinksCollection;
 use AmoCRM\Models\CompanyModel;
 use AmoCRM\Models\ContactModel;
@@ -528,6 +529,27 @@ class AmoService
     public function linkProductsToLead(LeadModel $lead, array $productIds): bool
     {
         try {
+            if (!$lead->getId()) {
+                return false;
+            }
+
+            $productIds = array_values(array_unique(array_map('intval', array_filter($productIds))));
+
+            // Replace product links atomically: unlink old catalog elements, then attach actual list.
+            $filter = (new LinksFilter())
+                ->setToEntityType('catalog_elements')
+                ->setToCatalogId((int) CrmSchema::FIELDS['catalog']['id']);
+
+            try {
+                $existingLinks = $this->client->leads()->getLinks($lead, $filter);
+            } catch (AmoCRMApiNoContentException) {
+                $existingLinks = new LinksCollection();
+            }
+
+            if ($existingLinks->count() > 0) {
+                $this->client->leads()->unlink($lead, $existingLinks);
+            }
+
             if (empty($productIds)) {
                 return true;
             }
